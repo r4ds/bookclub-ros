@@ -1,4 +1,4 @@
-# Introduction
+# Some basic methods in mathematics and probability
 
 **Learning objectives:**
 
@@ -13,7 +13,7 @@
 
 ### Cohort 1
 
-`r knitr::include_url("https://www.youtube.com/embed/VYivNF3xL9c")`
+`r knitr::include_url("https://www.youtube.com/embed/PvL6GZOJ4OY")`
 
 <!--
 ### Cohort 2

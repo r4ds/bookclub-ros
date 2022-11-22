@@ -1,4 +1,4 @@
-# Introduction
+# Generative models and statistical inference
 
 **Learning objectives:**
 
@@ -13,7 +13,9 @@
 
 ### Cohort 1
 
-`r knitr::include_url("https://www.youtube.com/embed/VYivNF3xL9c")`
+`r knitr::include_url("https://www.youtube.com/embed/8hdHckbQ5X8")`
+
+`r knitr::include_url("https://www.youtube.com/embed/gg7XfDgyf84")`
 
 <!--
 ### Cohort 2

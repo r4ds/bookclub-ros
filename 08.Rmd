@@ -1,4 +1,4 @@
-# Introduction
+# Fitting regression models
 
 **Learning objectives:**
 
@@ -13,7 +13,9 @@
 
 ### Cohort 1
 
-`r knitr::include_url("https://www.youtube.com/embed/VYivNF3xL9c")`
+`r knitr::include_url("https://www.youtube.com/embed/Mknsf_Huexk")`
+
+`r knitr::include_url("https://www.youtube.com/embed/wMrZoc6oOzg")`
 
 <!--
 ### Cohort 2

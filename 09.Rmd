@@ -1,4 +1,4 @@
-# Introduction
+# Prediction and Bayesian inference
 
 **Learning objectives:**
 
@@ -13,7 +13,9 @@
 
 ### Cohort 1
 
-`r knitr::include_url("https://www.youtube.com/embed/VYivNF3xL9c")`
+`r knitr::include_url("https://www.youtube.com/embed/c_bcD77VhMQ")`
+
+`r knitr::include_url("https://www.youtube.com/embed/o6aW5ogQiEQ")`
 
 <!--
 ### Cohort 2

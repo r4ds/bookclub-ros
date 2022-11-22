@@ -1,4 +1,4 @@
-# Introduction
+# Assumptions, diagnostics, and model evaluation
 
 **Learning objectives:**
 
@@ -13,7 +13,11 @@
 
 ### Cohort 1
 
-`r knitr::include_url("https://www.youtube.com/embed/VYivNF3xL9c")`
+`r knitr::include_url("https://www.youtube.com/embed/utgZGyRJYAU")`
+
+`r knitr::include_url("https://www.youtube.com/embed/OVA4cYBfovc")`
+
+`r knitr::include_url("https://www.youtube.com/embed/JUwgp4isp5U")`
 
 <!--
 ### Cohort 2

@@ -1,22 +1,17 @@
-# R4DS BOOKNAME Book Club
+# R4DS Regression and Other Stories Book Club
 
-FIND/REPLACE BOOKABBR, BOOKNAME, BOOKURL, BOOKAUTHORS, BOOKPUBLISHER, BOOKCOPYRIGHT, BOOKISBN, BOOKDOI, BOOKDAYS, BOOKTIMECST, BOOKCHANNELID, SIGNUPSHEETURL, TIMEANDDATEURL, STARTDATE, and PLAYLISTLINK THEN DELETE THIS SENTENCE.
+Welcome to the R4DS Regression and Other Stories Book Club!
 
-ALSO CONFIRM THE MEETING TIME INFO BELOW AND DELETE THIS SENTENCE.
-
-ALSO ADD PLACEHOLDERS FOR ALL CHAPTERS BY COPYING 01.Rmd (IDEALLY ALSO UPDATE TITLES WITHIN THE FILES), THEN DELETE THIS SENTENCE.
-
-Welcome to the R4DS BOOKNAME Book Club!
-
-We are working together to read [_BOOKNAME_](BOOKURL) by BOOKAUTHORS (BOOKPUBLISHER, copyright BOOKCOPYRIGHT, [BOOKISBN](BOOKDOI)).
-Join the [#book_club-BOOKABBR](https://rfordatascience.slack.com/archives/BOOKCHANNELID) channel on the [R4DS Slack](https://r4ds.io/join) to participate.
-As we read, we are producing [notes about the book](https://r4ds.io/BOOKABBR).
+We are working together to read [_Regression and Other Stories_](https://avehtari.github.io/ROS-Examples/) by Andrew Gelman, Jennifer Hill, and Aki Vehtari (Cambridge University Press, copyright 2020, [9781139161879](https://doi.org/10.1017/9781139161879)).
+Join the [#book_club-ros](https://rfordatascience.slack.com/archives/C01V8RJ4J0M) channel on the [R4DS Slack](https://r4ds.io/join) to participate.
+As we read, we are producing [notes about the book](https://r4ds.io/ros).
 
 ## Meeting Schedule
 
-If you would like to present, please see the sign-up sheet for your cohort (linked below, and pinned in the [#book_club-BOOKABBR](https://rfordatascience.slack.com/archives/BOOKCHANNELID) channel on Slack)!
+If you would like to present, please see the sign-up sheet for your cohort (linked below, and pinned in the [#book_club-ros](https://rfordatascience.slack.com/archives/C01V8RJ4J0M) channel on Slack)!
 
-- [Cohort 1](SIGNUPSHEETURL) (started STARTDATE): [BOOKDAYS, BOOKTIMECST CST/CDT](TIMEANDDATEURL) | [meeting videos](PLAYLISTLINK)
+- Cohort 1 (started 2021-05-18, ended 2021-11-30): [meeting videos](https://www.youtube.com/playlist?list=PL3x6DOfs2NGi-qV3hhy95RxEtChyX6we3)
+- [Cohort 2](https://docs.google.com/spreadsheets/d/1yyyCukV6qKx_IQhyguubGDyhWusEgWGbdaNznzXZpNg/edit?usp=sharing) (started 2022-12-01): [Thursdays, 14:00 CST/CDT](https://www.timeanddate.com/worldclock/converter.html?iso=20221201T200000&p1=24&p2=179&p3=1440) | [meeting videos](https://www.youtube.com/playlist?list=PL3x6DOfs2NGj4QAT3bvOaDICzyeN7k8tF)
 
 <hr>
 
@@ -28,13 +23,8 @@ To present, follow these instructions:
 
 Do these steps once:
 
-1. [Setup Github Locally](https://www.youtube.com/watch?v=hNUNPkoledI) (also see [_Happy Git and GitHub for the useR_](https://happygitwithr.com/github-acct.html))
-2. Install {usethis} and {devtools} `install.packages(c("usethis", "devtools"))`
-3. Set up a default {usethis} directory:
-  - `usethis::edit_r_profile()` to open your profile for editing.
-  - Add this line: `options(usethis.destdir = "YOURDIR")` (replace `YOURDIR` with the root directory under which you want your R projects to appear; or you can skip these steps, and the project will be saved to your Desktop).
-  - Restart your R session (Session/Restart R in Rstudio).
-4. `usethis::create_from_github("r4ds/bookclub-BOOKABBR")` (cleanly creates your own copy of this repository).
+1. [Setup Git and GitHub to work with RStudio](https://github.com/r4ds/bookclub-setup) (click through for detailed, step-by-step instructions; I recommend checking this out even if you're pretty sure you're all set).
+2. `usethis::create_from_github("r4ds/bookclub-ros")` (cleanly creates your own copy of this repository).
 
 Do these steps each time you present another chapter:
 
@@ -50,4 +40,4 @@ Do these steps each time you present another chapter:
 10. When your PR has been accepted ("merged"), `usethis::pr_finish()` to close out your branch and prepare your local repository for future work.
 11. Now that your local copy is up-to-date with the main repo, you need to update your remote fork. Run `gert::git_push("origin")` or click the `Push` button on the `Git` tab of Rstudio.
 
-When your PR is checked into the main branch, the bookdown site will rebuild, adding your slides to [this site](https://r4ds.io/BOOKABBR).
+When your PR is checked into the main branch, the bookdown site will rebuild, adding your slides to [this site](https://r4ds.io/ros).
