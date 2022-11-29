@@ -23,7 +23,35 @@ Regression is a method to summarize how predictions or averages of an *outcome* 
 Example: US Presidential elections vs economic growth in period leading up to the election:
 
 
-With a regression model we can engage in:
+```{r, echo=FALSE, message=FALSE}
+library(rstanarm)
+library(tidyverse)
+```
+
+```{r}
+hibbs <- read_delim('data/hibbs.dat',trim_ws=TRUE, col_types='inncc')
+
+```
+
+```{r, message= FALSE, warning=FALSE, results='hide'}
+M1 <- stan_glm(vote ~ growth, data=hibbs)
+```
+
+```{r}
+ggplot(data=hibbs, aes(x=growth, y=vote)) +
+  geom_point() + ylab('Incumbant Vote') + xlab('Precent Growth') +
+  geom_abline(intercept = coef(M1)[1], slope = coef(M1)[2], col='blue')
+```
+
+We can examine the coefficients by printing the model:
+
+```{r}
+print(M1)
+```
+
+The median model is $y = 46.3 + 3.0x$ 
+
+## Uses of a regresion model
 
 - *Prediction*: For example, predict future vote (with some uncertainty!) given the economy.
 
@@ -35,6 +63,16 @@ With a regression model we can engage in:
 
 ## Some examples
 
+- *Estimating public opinion from an opt-in internet survey* - Challenge was extrapolation to general public from data collected from Xbox users. (Section 17.1)
+
+- *Randomized experiment on the effect of an educational television program* - Challenge is adjusting for pre-treatment differences between treatment and control. (Section 19.2)
+
+- *Estimating the effects of United Nations peacekeeping*  - Challenges include this being an observational study. A pre-treatment 'badness' score was used to correct for pre-treatment differences.
+
+- *Estimating the effect of gun laws* - The challenge here was the difficulty of inference using regression with a
+large number of predictors (50 data points with 30 predictors!!).  Also systematic differences between states were not captured by the models other predictors. 
+ 
+We note that the peacekeeping study and the gun-control study are of the same time, but the peacekeeping study was more focused and was able to approximately account for systematic differences which does not seem possible with the gun-control study.
 
 ## Challenges with regression
 
@@ -43,14 +81,7 @@ Two main uses of regression
 ## Classical and Bayesian inference
 
 ## Computing least squares and Bayesian regression
-**Learning objectives:**
-
-- THESE ARE NICE TO HAVE BUT NOT ABSOLUTELY NECESSARY
-
-## SLIDE 1
-
-- ADD SLIDES AS SECTIONS (`##`).
-- TRY TO KEEP THEM RELATIVELY SLIDE-LIKE; THESE ARE NOTES, NOT THE BOOK ITSELF.
+ 
 
 ## Meeting Videos
 
