@@ -2,6 +2,49 @@
 
 **Learning objectives:**
 
+- Review key challenges of statistical inference in general.
+
+- Learn key challenges modelling of regression in particular.
+
+## Three Challenges of Statistics
+
+1. Generalizing from sample to population
+
+2. Generalizing from treatment to control group 
+
+3. Generalizing from observed measurements to the underlying constructs of interest 
+
+All three challenges can  be framed as problems of prediction, and in this book we will focus on learning to address this with regression models.
+
+## Why learn regression?
+
+Regression is a method to summarize how predictions or averages of an *outcome* varies across individuals defined by a set of predictors.
+
+Example: US Presidential elections vs economic growth in period leading up to the election:
+
+
+With a regression model we can engage in:
+
+- *Prediction*: For example, predict future vote (with some uncertainty!) given the economy.
+
+- *Exploring Associations*: For example, the slope above summarizes the impact of the economy on election outcomes.
+
+- *Extrapolation*: For example, pre-election polls can be adjusted for factors like party identification to extrapolate to the voting population at large. (Chapter 17.1)
+
+- *Casual Inference*: Estimating treatment effects. For the election example, we can imagine looking at the effect some law (for example tax cuts) on election outcomes. (Chapter 19)
+
+## Some examples
+
+
+## Challenges with regression
+
+Two main uses of regression
+
+## Classical and Bayesian inference
+
+## Computing least squares and Bayesian regression
+**Learning objectives:**
+
 - THESE ARE NICE TO HAVE BUT NOT ABSOLUTELY NECESSARY
 
 ## SLIDE 1
