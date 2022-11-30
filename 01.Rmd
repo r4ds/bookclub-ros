@@ -89,18 +89,6 @@ The median model is $y = 46.3 + 3.0x$
 large number of predictors (50 data points with 30 predictors!!).  Also systematic differences between states were not captured by the models other predictors. 
  
 We note that the peacekeeping study and the gun-control study are of the same type, but the peacekeeping study was more focused and was able to approximately account for systematic differences which does not seem possible with the gun-control study.
-
-## Interpreting Coefficients {-}
-
-Example: $\text{earnings}=11000 + 1500*(\text{height}-60) + \text{error}$ where the error has standard deviation $22000$
-
-- Not good for *forecasting*, the errors are too large.
-    
-- Probably not good as *samping inference* without additional predictors help extrapolate from the sample. 
-    
-- *Casual inference* is questionable as short and tall people differ in many ways.
-    
-- Good though for *exploring associations*: We observe that there is a positive slope. Might lead to further investigations.
     
 ## Statistical Analysis Cycle {-}
    
