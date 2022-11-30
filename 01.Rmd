@@ -63,19 +63,47 @@ The median model is $y = 46.3 + 3.0x$
 
 - *Casual Inference*: Estimating treatment effects. For the election example, we can imagine looking at the effect some law (for example tax cuts) on election outcomes. (Chapter 19)
 
-## Regression for casual inference {-}
+## Regression to establish a (causal) relationship {-}
 
-* Estimating a relationship:
+```{r, echo=FALSE }
+set.seed(1151)
+N <- 50
+x <- runif(N, 1, 5)
+y <- rnorm(N, 10 + 3*x, 3)
+data <- data.frame(N, x, y)
+lm_1a <- lm(y ~ x, data = data)
+ggplot(data=data, aes(x=x, y=y)) +
+  geom_point() + ylab('outcome') + xlab('treatment level') +
+  geom_abline(intercept = coef(lm_1a)[1], slope = coef(lm_1a)[2], col='blue')
+```
 
-   - Assumes randomized or balanced groups
+- Assumes randomized or balanced groups
    
-   - With that, we can estimate directly the causal effect from regression analysis
-
-* Regression to adjust for differences between treatment and control groups
-
-   - Important when there is an *imbalance*
+- With that, we can estimate directly the causal effect from regression analysis
    
-   - Good analysis will include clear explanations of any adjustments
+## Regression to adjust for pretreatment differences {-}
+
+```{r, echo=FALSE}
+set.seed(1337)
+N <- 100
+z <- rep(0:1, N/2)
+xx <- ifelse(z==0, rnorm(N, 0, 1.2)^2, rnorm(N, 0, .8)^2)
+yy <- rnorm(N, 20 + 5*xx + 10*z, 3)
+data <- data.frame(xx, z, yy)
+lm_2 <- lm(yy ~ xx + z, data=data)
+ggplot(data=data, aes(x=xx, y=yy)) +
+  geom_point(mapping = aes(col=z)) + ylab('outcome') + xlab('pre-treatment') +
+  geom_abline(intercept = coef(lm_2)[1], slope = coef(lm_2)[2], col='black') +
+  geom_abline(intercept = coef(lm_2)[1] + coef(lm_2)[3],
+              slope = coef(lm_2)[2], col='blue')
+```
+```{r, echo=FALSE}
+cat(c("Effect: " ,coef(lm_2)[3]))
+```
+
+- Important when there is an *imbalance* between groups
+   
+- Good analysis will include clear explanations of any adjustments
 
 ## Examples of challenges {-}
 
