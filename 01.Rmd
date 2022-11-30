@@ -182,7 +182,7 @@ summary(M2)
 summary(M1)
 ```
 
-Also you can probably follow along in Python with Bambi:
+Also you can also use Python with Bambi:
 
 ```
 model = bmb.Model('y ~ x', mydata)
