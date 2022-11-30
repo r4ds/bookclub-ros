@@ -126,37 +126,31 @@ We note that the peacekeeping study and the gun-control study are of the same ty
     
 - No study is perfect! *Recognize* challenges in extrapolation and *Adjust* for them.
 
-## Model Building Concerns {-}
+## Classical and Bayesian Inference {-}
 
-Three concerns for model building: *Information*, *Assumptions* and *Interpretation*:
+***Two primary approaches to interpreting predictions and estimates:***
 
-- *Information* - Data, how they were collected, and *prior knowledge*.
-
-- *Assumptions* - The functional form of the regression, statistical models (normal, binomial, etc), ...
-
-- *Interpretation* - Two primary approaches, Classical and Bayesian:
-
-   - *Classical*
+- *Classical*
    
-       - Traditional approach focused on summarizing the information in the data
+    - Traditional approach focused on summarizing the information in the data
    
-       - Estimates should be correct on average (unbiased), and confidence intervals should cover the true parameter value 95% of the time (coverage). (When same statistical procedure is applied to many different problems.)
+    - Estimates should be correct on average (unbiased), and confidence intervals should cover the true parameter value 95% of the time (coverage). (When same statistical procedure is applied to many different problems.)
        
-       - Strength: Emphasizes 'objectivity' over prior information - data 'speaks' for itself.
+    - Strength: Emphasizes 'objectivity' over prior information - data 'speaks' for itself.
        
-       - Weakness: Difficulty with small studies and indirect / highly variable data.
+    - Weakness: Difficulty with small studies and indirect / highly variable data.
    
-   - *Bayesian*
+- *Bayesian*
    
-       - Incorporates prior information into inferences to go beyond merely summarizing data
+    - Incorporates prior information into inferences to go beyond merely summarizing data
        
-       - Strength: Can provide valid predictions even with weak data.
+    - Strength: Can provide valid predictions even with weak data.
        
-       - Weakness: Requires prior information - 'Subjective'
+    - Weakness: Requires prior information - 'Subjective'
        
-       - Practical advantage: Inferences can be represented by *random simulations*. 
+    - Practical advantage: Inferences can be represented by *random simulations*. 
        
-    - *No correct answer* - be aware of your options. However we can use Bayesian methods (`stan_glm`) with noninformative or weakly informative priors to obtain results similar to classical methods (and still get simulation draws to express uncertainty!).  
+*No correct answer* - be aware of your options. However we can use Bayesian methods (`stan_glm`) with noninformative or weakly informative priors to obtain results similar to classical methods (and still get simulation draws to express uncertainty!).  
 
 ::: {style="color: blue;"}
 More on incorporating prior information in the Bayesian approach in chapter 9
