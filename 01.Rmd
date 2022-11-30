@@ -74,13 +74,100 @@ large number of predictors (50 data points with 30 predictors!!).  Also systemat
  
 We note that the peacekeeping study and the gun-control study are of the same time, but the peacekeeping study was more focused and was able to approximately account for systematic differences which does not seem possible with the gun-control study.
 
-## Challenges with regression
+## Regression for casual inference
 
-Two main uses of regression
+* Estimating a relationship:
 
-## Classical and Bayesian inference
+   - Assumes randomized or balanced groups
+   
+   - With that, we can estimate directly the causal effect from regression analysis
+   
+   - Can elaborate the model using non-linear terms and interactions
+
+* Regression to adjust for differences between treatment and control groups
+
+   - Important when there is an *imbalance*
+   
+   - Good analysis will include clear explanations of any adjustments
+
+## Challenges with building, interpreting and checking models.
+
+- Interpreting coefficients. Example: $\text{earnings}=11000 + 1500*(\text{height}-60) + \text{error}$ where the error has standard deviation $22000$
+
+    - Not good for *forecasting*, the errors are too large.
+    
+    - Probably not good as *samping inference* without additional predictors help extrapolate from the sample. 
+    
+    - *Casual inference* is questionalable as short and tall people differ in many ways.
+    
+    - Good though for *exploring associations*: We observe that there is a positive slope. Might lead to further investigations.
+   
+
+- In the 'Build, fit, understand, criticize' cycle:
+
+    - Challenge is to be critical without being nihilistic
+    
+    - No study is perfect! *Recognize* challenges in extrapolation and *Adjust* for them.
+
+## Model building concerns:
+
+- *Information* - Data, how they were collected, and *prior knowledge*.
+
+- *Assumptions* - The functional form of the regression, statistical models (normal, binomial, etc), ...
+
+- *Interpretation* - Two primary approaches, Classical and Bayesian:
+
+   - *Classical*
+   
+       - Traditional approach based on summarizing the information in the data
+   
+       - Estimates should be correct on average (unbiased), and confidence intervals should cover the true parameter value 95% of the time (coverage). (When same statistical procedure is applied to many different problems.)
+       
+       - Strength is that this approach emphasizes 'objectivity' and not prior information- data 'speaks' for itself.
+       
+       - Weakness is when studies are small and data are indirect or highly variable
+   
+   - *Bayesian*
+   
+       - Incorporates prior information into inferences to go beyond merely summarizing data
+       
+       - Strength: Can provide valid predictions even with weak data.
+       
+       - Weakness is the required prior information.  
+       
+       - Practical advantage: Inferences can be represented by *random simulations*. 
+       
+    - *No correct answer* - be aware of your options. However we can use Bayesian methods (`stan_glm`) with noninformative or weakly informative priors to obtain results similar to classical methods (and still get simulation draws to express uncertainty!).  
+
+::: {style="color: blue;"}
+More on incorporating prior information in the Bayesian approach in chapter 9
+:::
+
 
 ## Computing least squares and Bayesian regression
+
+In r, to fit a Bayesian regression you can use `stan_glm` (which assume weakly informative default priors)
+
+```
+fit <- stan_glm(y ~ x, data = mydata)
+```
+
+If you prefer you can use `lm`:
+
+```
+fit <- lm(y ~ x, data = mydata)
+```
+
+The results will be very similar.
+
+```{r}
+M2 <- lm(vote ~ growth, data=hibbs)
+summary(M2)
+```
+```{r}
+summary(M1)
+```
+
  
 
 ## Meeting Videos
