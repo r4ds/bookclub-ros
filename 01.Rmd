@@ -6,7 +6,9 @@
 
 - Learn key challenges of regression modeling in particular.
 
-## Three Challenges of Statistics
+> Chapter of concepts... chapter of *lists* !
+
+## Three Challenges of Statistics {-}
 
 1. Generalizing from sample to population
 
@@ -16,7 +18,7 @@
 
 All three challenges can  be framed as problems of prediction, and in this book we will focus on learning to address this with regression models.
 
-## Why learn regression?
+## Regression Example {-}
 
 Regression is a method to summarize how predictions or averages of an *outcome* varies across individuals defined by a set of *predictors*.
 
@@ -51,7 +53,7 @@ print(M1)
 
 The median model is $y = 46.3 + 3.0x$ 
 
-## Uses of a regresion model {-}
+## What's it good for?  {-}
 
 - *Prediction*: For example, predict future vote (with some uncertainty!) given the economy.
 
@@ -61,7 +63,21 @@ The median model is $y = 46.3 + 3.0x$
 
 - *Casual Inference*: Estimating treatment effects. For the election example, we can imagine looking at the effect some law (for example tax cuts) on election outcomes. (Chapter 19)
 
-## Some examples
+## Regression for casual inference {-}
+
+* Estimating a relationship:
+
+   - Assumes randomized or balanced groups
+   
+   - With that, we can estimate directly the causal effect from regression analysis
+
+* Regression to adjust for differences between treatment and control groups
+
+   - Important when there is an *imbalance*
+   
+   - Good analysis will include clear explanations of any adjustments
+
+## Examples of challenges {-}
 
 - *Estimating public opinion from an opt-in internet survey* - Challenge was extrapolation to general public from data collected from Xbox users. (Section 17.1)
 
@@ -74,23 +90,7 @@ large number of predictors (50 data points with 30 predictors!!).  Also systemat
  
 We note that the peacekeeping study and the gun-control study are of the same time, but the peacekeeping study was more focused and was able to approximately account for systematic differences which does not seem possible with the gun-control study.
 
-## Regression for casual inference {-}
-
-* Estimating a relationship:
-
-   - Assumes randomized or balanced groups
-   
-   - With that, we can estimate directly the causal effect from regression analysis
-   
-   - Can elaborate the model using non-linear terms and interactions
-
-* Regression to adjust for differences between treatment and control groups
-
-   - Important when there is an *imbalance*
-   
-   - Good analysis will include clear explanations of any adjustments
-
-## Challenges with building, interpreting and checking models.
+## Challenges with building, interpreting and checking models. {-}
 
 - Interpreting coefficients. Example: $\text{earnings}=11000 + 1500*(\text{height}-60) + \text{error}$ where the error has standard deviation $22000$
 
@@ -109,7 +109,7 @@ We note that the peacekeeping study and the gun-control study are of the same ti
     
     - No study is perfect! *Recognize* challenges in extrapolation and *Adjust* for them.
 
-## Classical and Bayesian Inference
+## Model Building Concerns {-}
 
 Three concerns for model building: *Information*, *Assumptions* and *Interpretation*:
 
@@ -121,13 +121,13 @@ Three concerns for model building: *Information*, *Assumptions* and *Interpretat
 
    - *Classical*
    
-       - Traditional approach based on summarizing the information in the data
+       - Traditional approach focused on summarizing the information in the data
    
        - Estimates should be correct on average (unbiased), and confidence intervals should cover the true parameter value 95% of the time (coverage). (When same statistical procedure is applied to many different problems.)
        
-       - Strength is that this approach emphasizes 'objectivity' and not prior information- data 'speaks' for itself.
+       - Strength: Emphasizes 'objectivity' over prior information - data 'speaks' for itself.
        
-       - Weakness is when studies are small and data are indirect or highly variable
+       - Weakness: Difficulty with small studies and indirect / highly variable data.
    
    - *Bayesian*
    
@@ -135,7 +135,7 @@ Three concerns for model building: *Information*, *Assumptions* and *Interpretat
        
        - Strength: Can provide valid predictions even with weak data.
        
-       - Weakness is the required prior information.  
+       - Weakness: Requires prior information - 'Subjective'
        
        - Practical advantage: Inferences can be represented by *random simulations*. 
        
@@ -146,7 +146,7 @@ More on incorporating prior information in the Bayesian approach in chapter 9
 :::
 
 
-## Computing least squares and Bayesian regression
+## Computing least squares and Bayesian regression {-}
 
 In r, to fit a Bayesian regression you can use `stan_glm` (which assume weakly informative default priors)
 
@@ -177,7 +177,7 @@ model = bmb.Model('y ~ x', mydata)
 ```
  
 
-## Meeting Videos
+## Meeting Videos {-}
 
 ### Cohort 1
 
