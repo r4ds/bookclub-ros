@@ -63,7 +63,7 @@ The median model is $y = 46.3 + 3.0x$
 
 - *Casual Inference*: Estimating treatment effects. For the election example, we can imagine looking at the effect some law (for example tax cuts) on election outcomes. (Chapter 19)
 
-## Regression to establish a (causal) relationship {-}
+## Causual Inference {-}
 
 ```{r, echo=FALSE }
 set.seed(1151)
@@ -77,11 +77,11 @@ ggplot(data=data, aes(x=x, y=y)) +
   geom_abline(intercept = coef(lm_1a)[1], slope = coef(lm_1a)[2], col='blue')
 ```
 
-- Assumes randomized or balanced groups
+- Assumes randomized or balanced samples
    
 - With that, we can estimate directly the causal effect from regression analysis
    
-## Regression to adjust for pretreatment differences {-}
+## Adjust for pretreatment differences {-}
 
 ```{r, echo=FALSE}
 set.seed(1337)
@@ -89,13 +89,14 @@ N <- 100
 z <- rep(0:1, N/2)
 xx <- ifelse(z==0, rnorm(N, 0, 1.2)^2, rnorm(N, 0, .8)^2)
 yy <- rnorm(N, 20 + 5*xx + 10*z, 3)
-data <- data.frame(xx, z, yy)
-lm_2 <- lm(yy ~ xx + z, data=data)
-ggplot(data=data, aes(x=xx, y=yy)) +
-  geom_point(mapping = aes(col=z)) + ylab('outcome') + xlab('pre-treatment') +
-  geom_abline(intercept = coef(lm_2)[1], slope = coef(lm_2)[2], col='black') +
+data <- tibble(pretreat=xx,group=c('no treatment','treatment')[z+1], outcome=yy)  
+lm_2 <- lm(outcome ~ pretreat + group, data=data)
+ggplot(data=data, aes(x=pretreat, y=outcome)) +
+  geom_point(mapping = aes(colour=group)) + ylab('outcome') + xlab('pre-treatment') +
+  theme(legend.position = c(.8,.30)) +
+  geom_abline(intercept = coef(lm_2)[1], slope = coef(lm_2)[2], col='red') +
   geom_abline(intercept = coef(lm_2)[1] + coef(lm_2)[3],
-              slope = coef(lm_2)[2], col='blue')
+              slope = coef(lm_2)[2], col='cyan')
 ```
 ```{r, echo=FALSE}
 cat(c("Effect: " ,coef(lm_2)[3]))
@@ -114,9 +115,9 @@ cat(c("Effect: " ,coef(lm_2)[3]))
 - *Estimating the effects of United Nations peacekeeping*  - Challenges include this being an observational study. A pre-treatment 'badness' score was used to correct for pre-treatment differences.
 
 - *Estimating the effect of gun laws* - The challenge here was the difficulty of inference using regression with a
-large number of predictors (50 data points with 30 predictors!!).  Also systematic differences between states were not captured by the models other predictors. 
+large number of predictors (50 data points with 30 predictors!!).  Also systematic differences between states were not captured by the model's other predictors. 
  
-We note that the peacekeeping study and the gun-control study are of the same type, but the peacekeeping study was more focused and was able to approximately account for systematic differences which does not seem possible with the gun-control study.
+The book notes that the peacekeeping study and the gun-control study are of the same type, but the peacekeeping study was more focused and was able to approximately account for systematic differences which does not seem possible with the gun-control study.
     
 ## Statistical Analysis Cycle {-}
    
