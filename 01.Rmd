@@ -55,7 +55,7 @@ The median model is $y = 46.3 + 3.0x$
 
 - *Prediction*: For example, predict future vote (with some uncertainty!) given the economy.
 
-- *Exploring Associations*: For example, the slope above summarizes the impact of the economy on election outcomes.
+- *Exploring Associations*: For example, the slope above summarizes the impact of the economy on election outcomes. A 1 percent improvement in the economy results in (on average) a 3% improvement in the vote for the incumbant.
 
 - *Extrapolation*: For example, pre-election polls can be adjusted for factors like party identification to extrapolate to the voting population at large. (Chapter 17.1)
 
@@ -172,7 +172,7 @@ Also you can probably follow along in Python with Bambi:
 
 ```
 model = bmb.Model('y ~ x', mydata)
-``
+```
  
 
 ## Meeting Videos
