@@ -4,7 +4,7 @@
 
 - Review key challenges of statistical inference in general.
 
-- Learn key challenges modelling of regression in particular.
+- Learn key challenges of regression modeling in particular.
 
 ## Three Challenges of Statistics
 
@@ -18,7 +18,7 @@ All three challenges can  be framed as problems of prediction, and in this book 
 
 ## Why learn regression?
 
-Regression is a method to summarize how predictions or averages of an *outcome* varies across individuals defined by a set of predictors.
+Regression is a method to summarize how predictions or averages of an *outcome* varies across individuals defined by a set of *predictors*.
 
 Example: US Presidential elections vs economic growth in period leading up to the election:
 
@@ -51,7 +51,7 @@ print(M1)
 
 The median model is $y = 46.3 + 3.0x$ 
 
-## Uses of a regresion model
+## Uses of a regresion model {-}
 
 - *Prediction*: For example, predict future vote (with some uncertainty!) given the economy.
 
@@ -74,7 +74,7 @@ large number of predictors (50 data points with 30 predictors!!).  Also systemat
  
 We note that the peacekeeping study and the gun-control study are of the same time, but the peacekeeping study was more focused and was able to approximately account for systematic differences which does not seem possible with the gun-control study.
 
-## Regression for casual inference
+## Regression for casual inference {-}
 
 * Estimating a relationship:
 
@@ -109,7 +109,9 @@ We note that the peacekeeping study and the gun-control study are of the same ti
     
     - No study is perfect! *Recognize* challenges in extrapolation and *Adjust* for them.
 
-## Model building concerns:
+## Classical and Bayesian Inference
+
+Three concerns for model building: *Information*, *Assumptions* and *Interpretation*:
 
 - *Information* - Data, how they were collected, and *prior knowledge*.
 
