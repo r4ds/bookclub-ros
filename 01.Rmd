@@ -2,14 +2,196 @@
 
 **Learning objectives:**
 
-- THESE ARE NICE TO HAVE BUT NOT ABSOLUTELY NECESSARY
+- Review key challenges of statistical inference in general.
 
-## SLIDE 1
+- Learn key challenges of regression modeling in particular.
 
-- ADD SLIDES AS SECTIONS (`##`).
-- TRY TO KEEP THEM RELATIVELY SLIDE-LIKE; THESE ARE NOTES, NOT THE BOOK ITSELF.
+> Chapter of concepts... chapter of *lists* !
 
-## Meeting Videos
+## Three Challenges of Statistics {-}
+
+1. Generalizing from sample to population
+
+2. Generalizing from treatment to control group 
+
+3. Generalizing from observed measurements to the underlying constructs of interest 
+
+This book will focus on learning to address this with regression models.
+
+## Regression Example {-}
+
+Regression is a method to summarize how predictions or averages of an *outcome* varies across individuals defined by a set of *predictors*.
+
+Example: US Presidential elections vs economic growth in period leading up to the election:
+
+
+```{r, echo=FALSE, message=FALSE}
+library(rstanarm)
+library(ggplot2)
+library(tidyr)
+library(readr)
+```
+
+```{r}
+hibbs <- read_delim('data/hibbs.dat',trim_ws=TRUE, col_types='inncc')
+
+```
+
+```{r, message= FALSE, warning=FALSE, results='hide'}
+M1 <- stan_glm(vote ~ growth, data=hibbs)
+```
+
+```{r}
+ggplot(data=hibbs, aes(x=growth, y=vote)) +
+  geom_point() + ylab('Incumbant Vote') + xlab('Precent Growth') +
+  geom_abline(intercept = coef(M1)[1], slope = coef(M1)[2], col='blue')
+```
+
+We can examine the coefficients by printing the model:
+
+```{r}
+print(M1)
+```
+
+The median model is $y = 46.3 + 3.0x$ 
+
+## What's it good for?  {-}
+
+- *Prediction*: For example, predict future vote (with some uncertainty!) given the economy.
+
+- *Exploring Associations*: For example, the slope above summarizes the impact of the economy on election outcomes. A 1 percent improvement in the economy results in (on average) a 3% improvement in the vote for the incumbant.
+
+- *Extrapolation*: For example, pre-election polls can be adjusted for factors like party identification to extrapolate to the voting population at large. (Chapter 17.1)
+
+- *Casual Inference*: Estimating treatment effects. For the election example, we can imagine looking at the effect some law (for example tax cuts) on election outcomes. (Chapter 19)
+
+## Causual Inference {-}
+
+```{r, echo=FALSE }
+set.seed(1151)
+N <- 50
+x <- runif(N, 1, 5)
+y <- rnorm(N, 10 + 3*x, 3)
+data <- data.frame(N, x, y)
+lm_1a <- lm(y ~ x, data = data)
+ggplot(data=data, aes(x=x, y=y)) +
+  geom_point() + ylab('outcome') + xlab('treatment level') +
+  geom_abline(intercept = coef(lm_1a)[1], slope = coef(lm_1a)[2], col='blue')
+```
+
+- Assumes randomized or balanced samples
+   
+- With that, we can estimate directly the causal effect from regression analysis
+   
+## Adjust for pretreatment differences {-}
+
+```{r, echo=FALSE}
+set.seed(1337)
+N <- 100
+z <- rep(0:1, N/2)
+xx <- ifelse(z==0, rnorm(N, 0, 1.2)^2, rnorm(N, 0, .8)^2)
+yy <- rnorm(N, 20 + 5*xx + 10*z, 3)
+data <- tibble(pretreat=xx,group=c('no treatment','treatment')[z+1], outcome=yy)  
+lm_2 <- lm(outcome ~ pretreat + group, data=data)
+ggplot(data=data, aes(x=pretreat, y=outcome)) +
+  geom_point(mapping = aes(colour=group)) + ylab('outcome') + xlab('pre-treatment') +
+  theme(legend.position = c(.8,.30)) +
+  geom_abline(intercept = coef(lm_2)[1], slope = coef(lm_2)[2], col='red') +
+  geom_abline(intercept = coef(lm_2)[1] + coef(lm_2)[3],
+              slope = coef(lm_2)[2], col='cyan')
+```
+```{r, echo=FALSE}
+cat(c("Effect: " ,coef(lm_2)[3]))
+```
+
+- Important when there is an *imbalance* between groups
+   
+- Good analysis will include clear explanations of any adjustments
+
+## Examples of challenges {-}
+
+- *Estimating public opinion from an opt-in internet survey* - Challenge was extrapolation to general public from data collected from Xbox users. (Section 17.1)
+
+- *Randomized experiment on the effect of an educational television program* - Challenge is adjusting for pre-treatment differences between treatment and control. (Section 19.2)
+
+- *Estimating the effects of United Nations peacekeeping*  - Challenges include this being an observational study. A pre-treatment 'badness' score was used to correct for pre-treatment differences.
+
+- *Estimating the effect of gun laws* - The challenge here was the difficulty of inference using regression with a
+large number of predictors (50 data points with 30 predictors!!).  Also systematic differences between states were not captured by the model's other predictors. 
+ 
+The book notes that the peacekeeping study and the gun-control study are of the same type, but the peacekeeping study was more focused and was able to approximately account for systematic differences which does not seem possible with the gun-control study.
+    
+## Statistical Analysis Cycle {-}
+   
+`r knitr::include_graphics("images/ModelCycle.png")`
+
+- Challenge is to be critical without being nihilistic
+    
+- No study is perfect! *Recognize* challenges in extrapolation and *Adjust* for them.
+
+## Classical and Bayesian Inference {-}
+
+***Two primary approaches to interpreting predictions and estimates:***
+
+- *Classical*
+   
+    - Traditional approach focused on summarizing the information in the data
+   
+    - Estimates should be correct on average (unbiased), and confidence intervals should cover the true parameter value 95% of the time (coverage). (When same statistical procedure is applied to many different problems.)
+       
+    - Strength: Emphasizes 'objectivity' over prior information - data 'speaks' for itself.
+       
+    - Weakness: Difficulty with small studies and indirect / highly variable data.
+   
+- *Bayesian*
+   
+    - Incorporates prior information into inferences to go beyond merely summarizing data
+       
+    - Strength: Can provide valid predictions even with weak data.
+       
+    - Weakness: Requires prior information - 'Subjective'
+       
+    - Practical advantage: Inferences can be represented by *random simulations*. 
+       
+*No correct answer* - be aware of your options. However we can use Bayesian methods (`stan_glm`) with noninformative or weakly informative priors to obtain results similar to classical methods (and still get simulation draws to express uncertainty!).  
+
+::: {style="color: blue;"}
+More on incorporating prior information in the Bayesian approach in chapter 9
+:::
+
+
+## Computing least squares and Bayesian regression {-}
+
+In r, to fit a Bayesian regression you can use `stan_glm` (which assume weakly informative default priors)
+
+```
+fit <- stan_glm(y ~ x, data = mydata)
+```
+
+If you prefer you can use `lm`:
+
+```
+fit <- lm(y ~ x, data = mydata)
+```
+
+The results will be very similar.
+
+```{r}
+M2 <- lm(vote ~ growth, data=hibbs)
+summary(M2)
+```
+```{r}
+summary(M1)
+```
+
+Also you can also use Python with Bambi:
+
+```
+model = bmb.Model('y ~ x', mydata)
+```
+ 
+
+## Meeting Videos {-}
 
 ### Cohort 1
 
