@@ -27,7 +27,9 @@ Example: US Presidential elections vs economic growth in period leading up to th
 
 ```{r, echo=FALSE, message=FALSE}
 library(rstanarm)
-library(tidyverse)
+library(ggplot2)
+library(tidyr)
+library(readr)
 ```
 
 ```{r}

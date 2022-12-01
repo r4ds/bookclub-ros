@@ -13,4 +13,8 @@ Depends:
     R (>= 3.1.0)
 Imports: 
     bookdown,
-    rmarkdown
+    ggplot2,
+    readr,
+    rmarkdown,
+    rstanarm,
+    tidyr
