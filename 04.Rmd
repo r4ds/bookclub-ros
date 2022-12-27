@@ -2,14 +2,22 @@
 
 **Learning objectives:**
 
-- THESE ARE NICE TO HAVE BUT NOT ABSOLUTELY NECESSARY
+- Sketch the basics of probability modeling, estimation, bias and variance
+- Discuss the interpretation of statistical inferences and statistical errors in applied work. 
 
-## SLIDE 1
+## Sampling Distributions
+ 
+## Estimates, standard errors, and confidence intervals
 
-- ADD SLIDES AS SECTIONS (`##`).
-- TRY TO KEEP THEM RELATIVELY SLIDE-LIKE; THESE ARE NOTES, NOT THE BOOK ITSELF.
+## Bias and unmodeled uncertain
 
-## Meeting Videos
+## Bias and unmodeled uncertain
+
+## Problems with the concept of statistical significance
+
+## Example of hypothesis testing
+
+## Moving beyond hypothesis testing
 
 ### Cohort 1
 
