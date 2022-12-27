@@ -6,6 +6,19 @@
 - Discuss the interpretation of statistical inferences and statistical errors in applied work. 
 
 ## Sampling Distributions
+
+### Role of inference {-}
+
+   - *Sampling model* - infer characteristics of population from sample
+   
+   - *Measurement error model* - infer measurement error in e.g. $y_i = a + b x_i + \epsilon_i$
+   
+   - *Model Error*  - all models are wrong.
+
+   
+>This book sets up regression models in the measurement error framework, $y_i = a + b x_i + \epsilon_i$ with the error also intepretable as model error, and sampling implicit in that the $\epsilon_i$ can be considered random samples from a distribution.
+
+### Sampling distribution {-}
  
 ## Estimates, standard errors, and confidence intervals
 
