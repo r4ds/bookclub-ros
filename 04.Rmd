@@ -119,6 +119,22 @@ estimate + qnorm(c(0.025, 0.975))*se
 
 ## Bias and unmodeled uncertainty
 
+- Unbiased estimate: correct on average
+
+- Unmodeled uncertainty:  sources of error that are not in our statistical model.
+
+### Example {-}
+
+Poll of 60,0000 people on their support of some candidate with 52.5% responding yes. Assuming a binomial model the error would be only $\sqrt{p (1-p)/n}$ ~ 0.2%. The sampling error is 0.2% but there are other sources of uncertainty, for example:
+
+- The sample might not be representative (people who choose to answer may be more likley or less likely to be supporters)
+
+- Opinions change over time.
+
+- Survey response might be inaccurate (checked the wrong box?)
+
+How to improve? 
+
 ## Problems with the concept of statistical significance
 
 ## Example of hypothesis testing
