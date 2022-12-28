@@ -19,12 +19,105 @@
 >This book sets up regression models in the measurement error framework, $y_i = a + b x_i + \epsilon_i$ with the error also intepretable as model error, and sampling implicit in that the $\epsilon_i$ can be considered random samples from a distribution.
 
 ### Sampling distribution {-}
+
+- Set of possible datasets that could have been observed if the data collection process had been re-done, along with associated probabilities.
+
+- In general, this distribution is not known but estimated from observed data. For example in for linear regression the distribution depends on the unknown $a$, $b$, and $\sigma$ (in $y_i = a + b x_i + \epsilon_i$) which are estimated from the data.
+
+- Generative model - represents a random process to generate new data set
+
  
 ## Estimates, standard errors, and confidence intervals
 
-## Bias and unmodeled uncertain
+### Jargon {-}
 
-## Bias and unmodeled uncertain
+- *Parameters* are the unknown numbers that determine the statistical model
+
+- *Coefficients* are, for example, the slope and intercept
+
+- *scale* or *variance* is the measurement error
+
+- *estimand* or *quantity of interest*  is some summary of parameters or data of interest
+
+> We use data to contruct estimaates of parameters or other quantities of interest. 
+
+- *standard error* is the estimated standard deviation of an *estimate*.
+
+- *Confidence interval* represents a range of values of a parameter or quantity of interest that are roughly consistent with the data, given the assumed sampling distribution. 
+
+When the sampling distribution is a normal distribution with mean $\mu$ and standard deviation $\sigma$, and $n$ draws are made from this distribution, then the estimate for $\mu$ is just the `mean`, the standard error is the `sd(data)/sqrt(n)`, and confidence intervals can be estimated using quantiles. 
+
+If the normal distribution is a good approximation:
+
+- 2 standard errors ~ 95% quantile
+- 2/3 standard errors ~ 50% quantile
+
+## Confidence Interval Simulation {-}
+
+This is simulation of 100 draws from a distribution with mean 6 and standard deviation 40.  The standard error will be close to 4.
+
+```{r, message= FALSE}
+library(tidyverse)
+set.seed(42)
+mu <- 6
+sig <- 40
+n_draws <- 100
+n_reps <- 1000
+
+sim_coverage <- tibble(
+  estimate = rep(0,n_reps), se = estimate
+)
+
+
+for(i in 1:n_reps){
+ sim_data <- rnorm(n_draws,mean=mu, sd= sig)
+ sim_coverage$estimate[[i]] <- mean(sim_data)
+ sim_coverage$se[[i]] = sd(sim_data)/sqrt(n_draws)
+}
+
+sim_coverage <- sim_coverage |>
+ mutate(min_95 = qt(0.025,n_draws-1)*se + estimate,
+        max_95 = qt(0.975,n_draws-1)*se + estimate,
+        min_50 = qt(0.25,n_draws-1)*se + estimate,
+        max_50 = qt(0.75,n_draws-1)*se + estimate,
+        covered_95 = min_95 <= mu & max_95 >= mu,
+        covered_50 = min_50 <= mu & max_50 >= mu
+        )
+ggplot(head(sim_coverage,100),aes(x= 1:100, y = estimate)) +
+  geom_pointrange(aes(ymin = min_95,ymax = max_95))+
+  geom_pointrange(aes(ymin = min_50,ymax = max_50), size= 1, fatten=0) +
+  geom_hline(aes(yintercept=6)) +
+  xlab('Simulation')
+
+```
+
+We expect on about 50% of the time that the 50% CI contains the true value, while we expect 95% of the time that the 95% CI contains the true value.
+
+```{r}
+sim_coverage |> summarise(p_covered_95 = mean(sim_coverage$covered_95),
+                          p_covered_50 = mean(sim_coverage$covered_50))       
+
+```
+
+## Degrees of Freedom, t-distribution {-}
+
+When standard error is estimated from the data, the sampling distribution for the estimated mean follows the student $t$ distribution with $n-1$ degrees of freedom. (Every coefficient uses up a degree of freedom)
+
+```{r}
+n <- length(sim_data)
+estimate <- mean(sim_data)
+se <- sd(sim_data)/sqrt(n)
+estimate + qt(c(0.025, 0.975), n-1)*se
+```
+
+Note that as the degrees of freedom approaches infinity, the t-distribution approaches the normal distribution.  30 is usually close enough to infinity. 
+
+```{r}
+estimate + qnorm(c(0.025, 0.975))*se
+```
+
+
+## Bias and unmodeled uncertainty
 
 ## Problems with the concept of statistical significance
 
