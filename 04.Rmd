@@ -125,9 +125,9 @@ estimate + qnorm(c(0.025, 0.975))*se
 
 ### Example {-}
 
-Poll of 60,0000 people on their support of some candidate with 52.5% responding yes. Assuming a binomial model the error would be only $\sqrt{p (1-p)/n}$ ~ 0.2%. The sampling error is 0.2% but there are other sources of uncertainty, for example:
+Poll of 60,000 people on their support of some candidate with 52.5% responding yes. Assuming a binomial model the error would be only $\sqrt{p (1-p)/n}$ ~ 0.2%. The sampling error is 0.2% but there are other sources of uncertainty and bias, for example:
 
-- The sample might not be representative (people who choose to answer may be more likley or less likely to be supporters)
+- The sample might not be representative (people who choose to answer may be more likely or less likely to be supporters)
 
 - Opinions change over time.
 
@@ -135,11 +135,68 @@ Poll of 60,0000 people on their support of some candidate with 52.5% responding 
 
 How to improve? 
 
+- Improve data collection- e.g. perform a series of 600 person polls at different places and times.
+
+- Expand the model - e.g. control for demographic categories
+
+- Last resort: Increase uncertainty to account for unmodeled error - e.g. in the instant case we could estimate unmodeled error at 2.5%, so that the total error on our sample of 60,000 people is $\sqrt{0.2^2 + 2.5^2} = 2.5$ percentage points. For only 600 people the error is $\sqrt{2^2 + 2.5^2} = 3.2$ precentage points. Not much gained from increasing sample size by a factor of 100!
+
+## Statistical significance, hypothesis testing, and statistical errors
+
+- *Statistically significant* - observed values could not be reasonably explained by chance (i.e. by the Null hypothesis $H_0$) 
+
+- *Hypothesis test* - based on a *test statistic* ($T$) that summarizes the deviation of the data from what would be expected under the null hypothesis ($H_0$).
+
+- *p-value* -  Probability of observing something at least as extreme as the observed *test statistic*. $p <0.05$ is often taken as 'statistically significant' 
+
+In simplest case, $H_0$ is presents some probability model of the data $y$, $p(y)$, with replication data $y_{rep}$. Then the p-value is computed by:
+
+$p = Pr(T(y^{rep}) \geq T(y))$
+
+> ROS authors do *not* recommend using statistical significance as a decision rule.
+
+### Type 1 and Type 2 errors vs.  Type M and Type S errors
+
+- *Type 1* - falsely rejecting a null hypothesis
+
+- *Type 2* - not rejecting a null hypothesis that actually false
+
+ROS authors do *not* like talking about these, mainly because in many problems the null hypothesis cannot really be true. A drug will have *some* effect, for example. They prefer:
+
+- *Type M* - The magnitude of the estimated effect is much different then the true effect.
+
+- *Type S* - The sign of the estimated effect is opposite to the true effect. 
+
+A statistical procedure can be characterized by its *Type S* error rate, and its expected exaggeration factor due to *Type M* errors. See section 16.1 for a detailed example, but the *Type M* error is a concern due to the "statistical significance filter" which puts a lower bound on the magnitude for a reported (published) effect.
+
+> The authors do not use null hypothesis significance testing as the primary research goal, but they do use it as a tool, for example 'non-rejection' means probably need more information / data.
+
 ## Problems with the concept of statistical significance
 
-## Example of hypothesis testing
+The approach of summarizing by statistical significance has five pitfalls:
+
+- Statistical significance is not the same as practical importance
+
+- Non-significance is not the same as zero
+
+- The difference between 'significant' and 'not significant' is not itself statistically significant.
+
+- Researcher degrees of freedom, p-hacking, and forking paths
+
+P-hacking is when the researcher intentionally fishes for 'significance' by trying multiple analysis approaches. However, even a well-intentioned researcher, who is computing a single test, can be unintentionally  'fishing' in the 'garden of forking paths' since the choice of that test and other choices made along the way in the analysis would likely have been different given different realized data.  See [Gelman and Loken 2014](http://www.stat.columbia.edu/~gelman/research/published/ForkingPaths.pdf)  
+
+- The statistical significance filter  (discussed earlier)
 
 ## Moving beyond hypothesis testing
+
+- Analyze *all*  your data 
+
+- Present *all* your comparisons (don't down select with p-values)
+
+- Make your data public
+
+To avoid *Type M* and *Type S* errors, study large difference, gather large samples, or accept uncertainty and embrace variation using Bayesian methods!
+
 
 ### Cohort 1
 
