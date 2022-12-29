@@ -2,10 +2,13 @@
 
 **Learning objectives:**
 
-- Sketch the basics of probability modeling, estimation, bias and variance
-- Discuss the interpretation of statistical inferences and statistical errors in applied work. 
+- Review the basics of probability modeling, estimation, bias and variance
 
-## Sampling Distributions
+- Discuss the interpretation of statistical inferences and statistical errors in applied work
+
+- Understand why it is mistake to use hypothesis tests or statistical significance to attribute certainty from noisy data
+
+## Inference and Sampling Distributions
 
 >Statistical inference can be formulated as a set of operations on data that yield estimates and
 uncertainty statements about predictions and parameters of some underlying process or population.
@@ -14,7 +17,7 @@ uncertainty statements about predictions and parameters of some underlying proce
 
    - *Sampling model* - infer characteristics of population from sample
    
-   - *Measurement error model* - infer measurement error in e.g. $y_i = a + b x_i + \epsilon_i$
+   - *Measurement error model* - infer parameters for underlying model, including measurement error. E.g. $a$ $b$ and $\sigma$ in $y_i = a + b x_i + \epsilon_i$, where $\epsilon_i \sim N(0,\sigma)$
    
    - *Model Error*  - all models are wrong.
 
@@ -46,7 +49,9 @@ uncertainty statements about predictions and parameters of some underlying proce
 
 - *standard error* is the estimated standard deviation of an *estimate*.
 
-- *Confidence interval* represents a range of values of a parameter or quantity of interest that are roughly consistent with the data, given the assumed sampling distribution. 
+- *Confidence interval* represents a range of values of a parameter or quantity of interest that are roughly consistent with the data, given the assumed sampling distribution. If the model is correct,
+then in repeated applications the 50% and 95% confidence intervals will include the true value 50%
+and 95% of the time.
 
 When the sampling distribution is a normal distribution with mean $\mu$ and standard deviation $\sigma$, and $n$ draws are made from this distribution, then the estimate for $\mu$ is just the `mean`, the standard error is the `sd(data)/sqrt(n)`, and confidence intervals can be estimated using quantiles. 
 
@@ -88,7 +93,7 @@ sim_coverage <- sim_coverage |>
         )
 ggplot(head(sim_coverage,100),aes(x= 1:100, y = estimate)) +
   geom_pointrange(aes(ymin = min_95,ymax = max_95))+
-  geom_pointrange(aes(ymin = min_50,ymax = max_50), size= 1, fatten=0) +
+  geom_pointrange(aes(ymin = min_50,ymax = max_50), linewidth= 1.5) +
   geom_hline(aes(yintercept=6)) +
   xlab('Simulation')
 
@@ -122,7 +127,7 @@ estimate + qnorm(c(0.025, 0.975))*se
 
 ## Bias and unmodeled uncertainty
 
-- Unbiased estimate: correct on average
+- Unbiased estimate: correct on average. "In practice, it is typically impossible to construct estimates that are truly unbiased ..."
 
 - Unmodeled uncertainty:  sources of error that are not in our statistical model.
 
@@ -146,7 +151,7 @@ How to improve?
 
 ## Statistical significance, hypothesis testing, and statistical errors
 
-- *Statistically significant* - observed values could not be reasonably explained by chance (i.e. by the Null hypothesis $H_0$) 
+- *Statistically significant* - observed values could not be reasonably explained by chance (i.e. by the null hypothesis $H_0$) 
 
 - *Hypothesis test* - based on a *test statistic* ($T$) that summarizes the deviation of the data from what would be expected under the null hypothesis ($H_0$).
 
@@ -182,13 +187,15 @@ The approach of summarizing by statistical significance has five pitfalls:
 
 - Non-significance is not the same as zero
 
-- The difference between 'significant' and 'not significant' is not itself statistically significant.
+- The difference between 'significant' and 'not significant' is not itself statistically significant. (E.g. 25+-10 is significant with p-value ~  0.012 , while 10+-10 is not significant, p-value ~ 0.32 )
+
+- The statistical significance filter - with small studies and small effects, significant effects *must* be big.
 
 - Researcher degrees of freedom, p-hacking, and forking paths
 
-P-hacking is when the researcher intentionally fishes for 'significance' by trying multiple analysis approaches. However, even a well-intentioned researcher, who is computing a single test, can be unintentionally  'fishing' in the 'garden of forking paths' since the choice of that test and other choices made along the way in the analysis would likely have been different given different realized data. [Gelman and Loken 2014](http://www.stat.columbia.edu/~gelman/research/published/ForkingPaths.pdf) is worth reading for more on this topic.  
+*P-hacking* is when the researcher intentionally fishes for 'significance' by trying multiple analysis approaches. However, even a well-intentioned researcher, who is computing a single test, can be unintentionally  'fishing' in the 'garden of forking paths' since the choice of that test and other choices made along the way in the analysis would likely have been different given different realized data. One *scientific* hypothesis can lead to many *statistical* hypotheses. [Gelman and Loken 2014](http://www.stat.columbia.edu/~gelman/research/published/ForkingPaths.pdf) is worth reading for more on this topic.  
 
-- The statistical significance filter  (discussed earlier)
+
 
 ## Moving beyond hypothesis testing
 
