@@ -1,4 +1,4 @@
-# Generative models and statistical inference
+# Statistical inference
 
 **Learning objectives:**
 
@@ -6,6 +6,9 @@
 - Discuss the interpretation of statistical inferences and statistical errors in applied work. 
 
 ## Sampling Distributions
+
+>Statistical inference can be formulated as a set of operations on data that yield estimates and
+uncertainty statements about predictions and parameters of some underlying process or population.
 
 ### Role of inference {-}
 
@@ -39,7 +42,7 @@
 
 - *estimand* or *quantity of interest*  is some summary of parameters or data of interest
 
-> We use data to contruct estimaates of parameters or other quantities of interest. 
+> We use data to contruct estimates of parameters or other quantities of interest. 
 
 - *standard error* is the estimated standard deviation of an *estimate*.
 
@@ -127,7 +130,7 @@ estimate + qnorm(c(0.025, 0.975))*se
 
 Poll of 60,000 people on their support of some candidate with 52.5% responding yes. Assuming a binomial model the error would be only $\sqrt{p (1-p)/n}$ ~ 0.2%. The sampling error is 0.2% but there are other sources of uncertainty and bias, for example:
 
-- The sample might not be representative (people who choose to answer may be more likely or less likely to be supporters)
+- The sample might not be representative (e.g. people who choose to answer may be more likely or less likely to be supporters)
 
 - Opinions change over time.
 
