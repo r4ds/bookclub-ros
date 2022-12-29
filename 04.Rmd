@@ -65,7 +65,8 @@ If the normal distribution is a good approximation:
 This is simulation of 100 draws from a distribution with mean 6 and standard deviation 40.  The standard error will be close to 4.
 
 ```{r, message= FALSE}
-library(tidyverse)
+library(dplyr)
+library(ggplot2)
 set.seed(42)
 mu <- 6
 sig <- 40
