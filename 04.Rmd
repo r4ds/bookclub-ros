@@ -186,7 +186,7 @@ The approach of summarizing by statistical significance has five pitfalls:
 
 - Researcher degrees of freedom, p-hacking, and forking paths
 
-P-hacking is when the researcher intentionally fishes for 'significance' by trying multiple analysis approaches. However, even a well-intentioned researcher, who is computing a single test, can be unintentionally  'fishing' in the 'garden of forking paths' since the choice of that test and other choices made along the way in the analysis would likely have been different given different realized data.  See [Gelman and Loken 2014](http://www.stat.columbia.edu/~gelman/research/published/ForkingPaths.pdf)  
+P-hacking is when the researcher intentionally fishes for 'significance' by trying multiple analysis approaches. However, even a well-intentioned researcher, who is computing a single test, can be unintentionally  'fishing' in the 'garden of forking paths' since the choice of that test and other choices made along the way in the analysis would likely have been different given different realized data. [Gelman and Loken 2014](http://www.stat.columbia.edu/~gelman/research/published/ForkingPaths.pdf) is worth reading for more on this topic.  
 
 - The statistical significance filter  (discussed earlier)
 
@@ -200,6 +200,7 @@ P-hacking is when the researcher intentionally fishes for 'significance' by tryi
 
 To avoid *Type M* and *Type S* errors, study large difference, gather large samples, or accept uncertainty and embrace variation using Bayesian methods!
 
+[Gelman and Loken 2014](http://www.stat.columbia.edu/~gelman/research/published/ForkingPaths.pdf) also encourage prepublication replication when possible.
 
 ### Cohort 1
 
