@@ -202,6 +202,8 @@ To avoid *Type M* and *Type S* errors, study large difference, gather large samp
 
 [Gelman and Loken 2014](http://www.stat.columbia.edu/~gelman/research/published/ForkingPaths.pdf) also encourage prepublication replication when possible.
 
+## Meeting Videos
+
 ### Cohort 1
 
 `r knitr::include_url("https://www.youtube.com/embed/8hdHckbQ5X8")`
