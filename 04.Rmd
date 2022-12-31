@@ -1,13 +1,214 @@
-# Generative models and statistical inference
+# Statistical inference
 
 **Learning objectives:**
 
-- THESE ARE NICE TO HAVE BUT NOT ABSOLUTELY NECESSARY
+- Review the basics of probability modeling, estimation, bias and variance
 
-## SLIDE 1
+- Discuss the interpretation of statistical inferences and statistical errors in applied work
 
-- ADD SLIDES AS SECTIONS (`##`).
-- TRY TO KEEP THEM RELATIVELY SLIDE-LIKE; THESE ARE NOTES, NOT THE BOOK ITSELF.
+- Understand why it is mistake to use hypothesis tests or statistical significance to attribute certainty from noisy data
+
+## Inference and Sampling Distributions
+
+>Statistical inference can be formulated as a set of operations on data that yield estimates and
+uncertainty statements about predictions and parameters of some underlying process or population.
+
+### Role of inference {-}
+
+   - *Sampling model* - infer characteristics of population from sample
+   
+   - *Measurement error model* - infer parameters for underlying model, including measurement error. E.g. $a$ $b$ and $\sigma$ in $y_i = a + b x_i + \epsilon_i$, where $\epsilon_i \sim N(0,\sigma)$
+   
+   - *Model Error*  - all models are wrong.
+
+   
+>This book sets up regression models in the measurement error framework, $y_i = a + b x_i + \epsilon_i$ with the error also intepretable as model error, and sampling implicit in that the $\epsilon_i$ can be considered random samples from a distribution.
+
+### Sampling distribution {-}
+
+- Set of possible datasets that could have been observed if the data collection process had been re-done, along with associated probabilities.
+
+- In general, this distribution is not known but estimated from observed data. For example in for linear regression the distribution depends on the unknown $a$, $b$, and $\sigma$ (in $y_i = a + b x_i + \epsilon_i$) which are estimated from the data.
+
+- Generative model - represents a random process to generate new data set
+
+ 
+## Estimates, standard errors, and confidence intervals
+
+### Jargon {-}
+
+- *Parameters* are the unknown numbers that determine the statistical model
+
+- *Coefficients* are, for example, the slope and intercept
+
+- *scale* or *variance* is the measurement error
+
+- *estimand* or *quantity of interest*  is some summary of parameters or data of interest
+
+> We use data to contruct estimates of parameters or other quantities of interest. 
+
+- *standard error* is the estimated standard deviation of an *estimate*.
+
+- *Confidence interval* represents a range of values of a parameter or quantity of interest that are roughly consistent with the data, given the assumed sampling distribution. If the model is correct,
+then in repeated applications the 50% and 95% confidence intervals will include the true value 50%
+and 95% of the time.
+
+When the sampling distribution is a normal distribution with mean $\mu$ and standard deviation $\sigma$, and $n$ draws (`data`) are made from this distribution, then the estimate for $\mu$ is just the `mean(data)`, the standard error is the `sd(data)/sqrt(n)`, and confidence intervals can be estimated using quantiles. 
+
+If the normal distribution is a good approximation:
+
+- 2 standard errors ~ 95% quantile
+- 2/3 standard errors ~ 50% quantile
+
+## Confidence Interval Simulation {-}
+
+This is simulation of 100 draws from a distribution with mean 6 and standard deviation 40.  The standard error will be close to 4.
+
+```{r, message= FALSE}
+library(dplyr)
+library(ggplot2)
+set.seed(42)
+mu <- 6
+sig <- 40
+n_draws <- 100
+n_reps <- 1000
+
+sim_coverage <- tibble(
+  estimate = rep(0,n_reps), se = estimate
+)
+
+
+for(i in 1:n_reps){
+ sim_data <- rnorm(n_draws,mean=mu, sd= sig)
+ sim_coverage$estimate[[i]] <- mean(sim_data)
+ sim_coverage$se[[i]] = sd(sim_data)/sqrt(n_draws)
+}
+
+sim_coverage <- sim_coverage |>
+ mutate(min_95 = qt(0.025,n_draws-1)*se + estimate,
+        max_95 = qt(0.975,n_draws-1)*se + estimate,
+        min_50 = qt(0.25,n_draws-1)*se + estimate,
+        max_50 = qt(0.75,n_draws-1)*se + estimate,
+        covered_95 = min_95 <= mu & max_95 >= mu,
+        covered_50 = min_50 <= mu & max_50 >= mu
+        )
+ggplot(head(sim_coverage,100),aes(x= 1:100, y = estimate)) +
+  geom_pointrange(aes(ymin = min_95,ymax = max_95))+
+  geom_pointrange(aes(ymin = min_50,ymax = max_50), linewidth= 1.5) +
+  geom_hline(aes(yintercept=6)) +
+  xlab('Simulation')
+
+```
+
+We expect on about 50% of the time that the 50% CI contains the true value, while we expect 95% of the time that the 95% CI contains the true value.
+
+```{r}
+sim_coverage |> summarise(p_covered_95 = mean(sim_coverage$covered_95),
+                          p_covered_50 = mean(sim_coverage$covered_50))       
+
+```
+
+## Degrees of Freedom, t-distribution {-}
+
+When standard error is estimated from the data, the sampling distribution for the estimated mean follows the student $t$ distribution with $n-1$ degrees of freedom. (Every coefficient uses up a degree of freedom)
+
+```{r}
+n <- length(sim_data)
+estimate <- mean(sim_data)
+se <- sd(sim_data)/sqrt(n)
+estimate + qt(c(0.025, 0.975), n-1)*se
+```
+
+Note that as the degrees of freedom approaches infinity, the t-distribution approaches the normal distribution.  30 is usually close enough to infinity. 
+
+```{r}
+estimate + qnorm(c(0.025, 0.975))*se
+```
+
+
+## Bias and unmodeled uncertainty
+
+- Unbiased estimate: correct on average. "In practice, it is typically impossible to construct estimates that are truly unbiased ..."
+
+- Unmodeled uncertainty:  sources of error that are not in our statistical model.
+
+### Example {-}
+
+Poll of 60,000 people on their support of some candidate with 52.5% responding yes. Assuming a binomial model the error would be only $\sqrt{p (1-p)/n}$ ~ 0.2%. The sampling error is 0.2% but there are other sources of uncertainty and bias, for example:
+
+- The sample might not be representative (e.g. people who choose to answer may be more likely or less likely to be supporters)
+
+- Opinions change over time.
+
+- Survey response might be inaccurate (checked the wrong box?)
+
+How to improve? 
+
+- Improve data collection- e.g. perform a series of 600 person polls at different places and times.
+
+- Expand the model - e.g. control for demographic categories
+
+- Last resort: Increase uncertainty to account for unmodeled error - e.g. in the instant case we could estimate unmodeled error at 2.5%, so that the total error on our sample of 60,000 people is $\sqrt{0.2^2 + 2.5^2} = 2.5$ percentage points. For only 600 people the error is $\sqrt{2^2 + 2.5^2} = 3.2$ precentage points. Not much gained from increasing sample size by a factor of 100!
+
+## Statistical significance, hypothesis testing, and statistical errors
+
+- *Statistically significant* - observed values could not be reasonably explained by chance (i.e. by the null hypothesis $H_0$) 
+
+- *Hypothesis test* - based on a *test statistic* ($T$) that summarizes the deviation of the data from what would be expected under the null hypothesis ($H_0$).
+
+- *p-value* -  Probability of observing something at least as extreme as the observed *test statistic*. $p <0.05$ is often taken as 'statistically significant' 
+
+In simplest case, $H_0$ is presents some probability model of the data $y$, $p(y)$, with replication data $y_{rep}$. Then the p-value is computed by:
+
+$p = Pr(T(y^{rep}) \geq T(y))$
+
+> ROS authors do *not* recommend using statistical significance as a decision rule.
+
+### Type 1 and Type 2 errors vs.  Type M and Type S errors
+
+- *Type 1* - falsely rejecting a null hypothesis
+
+- *Type 2* - not rejecting a null hypothesis that actually false
+
+ROS authors do *not* like talking about these, mainly because in many problems the null hypothesis cannot really be true. A drug will have *some* effect, for example. They prefer:
+
+- *Type M* - The magnitude of the estimated effect is much different then the true effect.
+
+- *Type S* - The sign of the estimated effect is opposite to the true effect. 
+
+A statistical procedure can be characterized by its *Type S* error rate, and its expected exaggeration factor due to *Type M* errors. See section 16.1 for a detailed example, but the *Type M* error is a concern due to the "statistical significance filter" which puts a lower bound on the magnitude for a reported (published) effect.
+
+> The authors do not use null hypothesis significance testing as the primary research goal, but they do use it as a tool, for example 'non-rejection' means probably need more information / data.
+
+## Problems with the concept of statistical significance
+
+The approach of summarizing by statistical significance has five pitfalls:
+
+- Statistical significance is not the same as practical importance
+
+- Non-significance is not the same as zero
+
+- The difference between 'significant' and 'not significant' is not itself statistically significant. (E.g. 25+-10 is significant with p-value ~  0.012 , while 10+-10 is not significant, p-value ~ 0.32 )
+
+- The statistical significance filter - with small studies and small effects, significant effects *must* be big.
+
+- Researcher degrees of freedom, p-hacking, and forking paths
+
+*P-hacking* is when the researcher intentionally fishes for 'significance' by trying multiple analysis approaches. However, even a well-intentioned researcher, who is computing a single test, can be unintentionally  'fishing' in the 'garden of forking paths' since the choice of that test and other choices made along the way in the analysis would likely have been different given different realized data. One *scientific* hypothesis can lead to many *statistical* hypotheses. [Gelman and Loken 2014](http://www.stat.columbia.edu/~gelman/research/published/ForkingPaths.pdf) is worth reading for more on this topic.  
+
+
+
+## Moving beyond hypothesis testing
+
+- Analyze *all*  your data 
+
+- Present *all* your comparisons (don't down select with p-values)
+
+- Make your data public
+
+To avoid *Type M* and *Type S* errors, study large difference, gather large samples, or accept uncertainty and embrace variation using Bayesian methods!
+
+[Gelman and Loken 2014](http://www.stat.columbia.edu/~gelman/research/published/ForkingPaths.pdf) also encourage prepublication replication when possible.
 
 ## Meeting Videos
 
