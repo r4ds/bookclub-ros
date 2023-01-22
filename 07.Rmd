@@ -2,12 +2,14 @@
 
 **Learning objectives:**
 
-- THESE ARE NICE TO HAVE BUT NOT ABSOLUTELY NECESSARY
+- Introduce regression for a single predictor $y_i = a + b x_i + \text{error}$
+- Demonstrate the steps of fitting, plotting and interpreting the fit. 
+- Learn to check the procedure using fake-data simulation
+- Learn how regression includes simple comparison as a simple case
+ 
+## Example data {-}
 
-## SLIDE 1
 
-- ADD SLIDES AS SECTIONS (`##`).
-- TRY TO KEEP THEM RELATIVELY SLIDE-LIKE; THESE ARE NOTES, NOT THE BOOK ITSELF.
 
 ## Meeting Videos
 
