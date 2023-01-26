@@ -2,12 +2,195 @@
 
 **Learning objectives:**
 
-- THESE ARE NICE TO HAVE BUT NOT ABSOLUTELY NECESSARY
+- Introduce regression for a single predictor $y_i = a + b x_i + \text{error}$
+- Demonstrate the steps of fitting, plotting and interpreting the fit. 
+- Learn to check the procedure using fake-data simulation
+- Learn how regression includes simple comparison as a simple case
+ 
+## Example data  
 
-## SLIDE 1
+```{r, message=FALSE}
+library(ggplot2)
+library(dplyr)
+library(rstanarm)
+```
 
-- ADD SLIDES AS SECTIONS (`##`).
-- TRY TO KEEP THEM RELATIVELY SLIDE-LIKE; THESE ARE NOTES, NOT THE BOOK ITSELF.
+This data comes from:
+
+https://www.kaggle.com/datasets/spittman1248/cdc-data-nutrition-physical-activity-obesity
+
+I will use a small subset, 2016 data containing for each state the percentage if adults who have obesity and the percent who engaged in strength training at least twice a week.
+
+```{r}
+exercise <- readr::read_csv('data/2016Exercise.csv',show_col_types = FALSE)
+head(exercise)
+```
+
+```{r, echo=FALSE}
+ggplot(exercise, aes(x= strengthTraining, y = obesity)) +  geom_text(aes(label= state))
+```
+
+## Fit the data {-}
+
+```{r}
+fit = stan_glm(obesity ~ strengthTraining, data = exercise, refresh= 0)
+print(fit, detail=FALSE)
+```
+Note: `refresh=0` suppresses the usual stan chain progress reports.
+
+Chapter 8 will discuss fitting procedure, but given the fit, what can we learn from this? 
+
+
+## Examine the fit {-}
+
+```{r, echo=FALSE}
+ggplot(exercise) + geom_point( aes(x= strengthTraining, y = obesity))  +
+                   geom_abline(aes(slope = coef(fit)[2], intercept = coef(fit)[1]))  + 
+                   geom_text( aes(x= strengthTraining, y = obesity, label=state), hjust=1.2, vjust=1, alpha=0.6) +
+                   geom_text( x = 24, y = 25, label = glue::glue('obesity = {round(coef(fit)[1],1)} - {-round(coef(fit)[2],1)} strengthTraining '))
+```
+
+- The fitted line is $y = 61.9 - 1.1 x$  The slope tells us that for every increase in percentage of people in a state that do strength training, we see a corresponding decrease in obesity by about 1.1 percent.   
+
+- The uncertainties (MAD_SD) are given for the Intercept and the slope (`strengthTraining`), 3.9 and 0.1 respectively.
+
+- The 95% interval for the slope is about -0.9 to -1.3, well separated from zero.
+
+- The estimated residual standard deviation is 2.5: our linear model predicts obesity in a state within 2.5 percent points (68% range)
+
+## Using the model to predict {-}
+
+Suppose some state engages in a program to promote strength training, and manages over several years to successfully get a 32% participation rate. With this simple model, what would we predict for obesity rate in that state to be? 
+
+```{r}
+61.9 - 1.1*32
+```
+So we would predict 26.7% obesity, with an uncertainty of 2.5% points. (e.g. a 95% CI can be estimated as 21.7% to 31.7%) 
+
+As the text states, this is understating the uncertainty since we have not included the uncertainty of the fitted parameters. This will be fixed in chapter 9
+
+## Checking the procedure with fake-data simulation
+
+- Step 1: Creating Pretend world.  
+
+   Assume  $y = 61.9 - 1.1 x + \text{error}$ is true, $\text{error} \sim N(0,2.5)$ 
+   
+```{r}
+a <- 61.9
+b <- -1.1
+sigma <- 2.5
+## Use predictors from data set
+x <- exercise$strengthTraining
+n <- length(x)
+```
+   
+- Step 2: Simulating fake data
+
+```{r}
+y <- a + b*x + rnorm(n,0,sigma)
+fake <- tibble(x,y)
+```
+- Step 3: Fit the fake data
+
+```{r}
+fit <- stan_glm(y ~ x, data = fake, refresh = 0)
+print(fit, detail=FALSE)
+```
+We can see in this particular simulation, the fit is consistent with the assumed model. But to understand this better we embed this in a loop...
+
+## Fake Data Loop {-}
+
+```{r, eval=FALSE}
+n_fake <- 1000
+cover_68 <- rep(NA, n_fake)
+cover_95 <- rep(NA, n_fake)
+for (s in 1:n_fake){
+  y <- a + b*x + rnorm(n,0,sigma)
+  fake <- tibble(x,y)
+  fit <- stan_glm(y ~ x, data = fake, refresh = 0)
+  b_hat <- coef(fit)["x"]
+  b_se <- se(fit)["x"]
+  # Is true value in the corresponding interval?
+  cover_68[s] <- abs(b - b_hat) < b_se
+  cover_95[s] <- abs(b - b_hat) < 2*b_se
+}
+
+cat(paste("68% coverage: ", mean(cover_68), "\n"))
+cat(paste("95% coverage: ", mean(cover_95), "\n"))
+
+```
+```
+68% coverage:  0.667 
+95% coverage:  0.941
+```
+
+Not far from nominal values, which gives us confidence in the fitting procedure!
+
+## Comparisons as Regression 
+
+- Simple averages and comparisons can be interpreted as special cases of regression
+
+- The key is to use an 'indicator' variable, a predictor that is 0 or 1 to `indicate` membership in a category. 
+
+## Estimating the mean = regression on constant term {-}
+
+```{r}
+set.seed(42)
+n_0 <- 20
+y_0 <- rnorm(n_0, 2.0, 5.0)
+cat(paste0('mean:', mean(y_0), '\nstandard error:', sd(y_0)/sqrt(n_0),"\n\n"))
+fake_0 <- data.frame(y_0)
+fit_0 <- stan_glm(y_0 ~ 1, data=fake_0,
+prior_intercept=NULL, prior=NULL, prior_aux=NULL, refresh =0 )
+print(fit_0, detail = FALSE)
+```
+Flat priors reproduce classical least squares estimate (more on this when we get to section 9.5)
+
+What about default priors?
+
+```{r}
+fit_0 <- stan_glm(y_0 ~ 1, data=fake_0, refresh =0 )
+print(fit_0, detail = FALSE)
+```
+## Estimating a difference = regressing on an indicator variable {-}
+
+Add a new group:
+
+```{r}
+n_1 <- 30
+y_1 <- rnorm(n_1, 8.0, 5.0)
+diff <- mean(y_1) - mean(y_0)
+se_0 <- sd(y_0)/sqrt(n_0)
+se_1 <- sd(y_1)/sqrt(n_1)
+se <- sqrt(se_0^2 + se_1^2)
+cat(paste0("Diff: ",diff," Se: ", se))
+```
+Compare to true difference of 6.0
+
+As a regression (again with flat priors):
+
+```{r}
+n <- n_0 + n_1
+y <- c(y_0, y_1)
+x <- c(rep(0, n_0), rep(1, n_1))
+fake <- data.frame(x, y)
+fit <- stan_glm(y ~ x, data=fake, prior_intercept=NULL, prior=NULL, prior_aux=NULL, refresh=0)
+print(fit, detail=FALSE)
+```
+- Indicator slope (4.8) is the same as the difference in means
+
+- MAD_SD (1.5) is nearly the same as the the SE
+
+```{r, echo=FALSE}
+ggplot(fake) + geom_point(mapping = aes(x=x, y=y)) +
+               geom_abline(mapping = aes(slope = coef(fit)[2], intercept = coef(fit)[1])) +
+               geom_text(x=0.5,y=7,label= "y = 2.9 + 4.8x") + 
+               geom_hline(yintercept = mean(y_0), linetype = 'dashed') +
+               geom_hline(yintercept = mean(y_1), linetype = 'dashed')
+```
+
+
+> Fake data simulation is a general tool that will continue to be helpful in more complicated settings.  
 
 ## Meeting Videos
 
