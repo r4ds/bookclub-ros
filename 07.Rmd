@@ -135,6 +135,7 @@ Not far from nominal values, which gives us confidence in the fitting procedure!
 ## Estimating the mean = regression on constant term {-}
 
 ```{r}
+set.seed(42)
 n_0 <- 20
 y_0 <- rnorm(n_0, 2.0, 5.0)
 cat(paste0('mean:', mean(y_0), '\nstandard error:', sd(y_0)/sqrt(n_0),"\n\n"))
@@ -176,14 +177,14 @@ fake <- data.frame(x, y)
 fit <- stan_glm(y ~ x, data=fake, prior_intercept=NULL, prior=NULL, prior_aux=NULL, refresh=0)
 print(fit, detail=FALSE)
 ```
-- Indicator slope (6.4) is the same as the difference in means
+- Indicator slope (4.8) is the same as the difference in means
 
 - MAD_SD (1.5) is nearly the same as the the SE
 
 ```{r, echo=FALSE}
 ggplot(fake) + geom_point(mapping = aes(x=x, y=y)) +
                geom_abline(mapping = aes(slope = coef(fit)[2], intercept = coef(fit)[1])) +
-               geom_text(x=0.5,y=7,label= "y = 1.9 + 6.4x") + 
+               geom_text(x=0.5,y=7,label= "y = 2.9 + 4.8x") + 
                geom_hline(yintercept = mean(y_0), linetype = 'dashed') +
                geom_hline(yintercept = mean(y_1), linetype = 'dashed')
 ```
