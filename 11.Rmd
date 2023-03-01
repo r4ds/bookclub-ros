@@ -3,7 +3,9 @@
 ```{r, echo=FALSE, message = FALSE}
 library(dplyr)
 library(rstanarm)
+library(readr)
 library(ggplot2)
+library(bayesplot)
 ```
 
 **Learning objectives:**
@@ -21,7 +23,7 @@ library(ggplot2)
    - Outcome should accurely reflect phenomenon of interest
    - Model should generalize to cases to which it will apply
    
-* Representativesness 
+* Representativesness (conditioned on predictors)
 
 * Additivity and Linearity
 
@@ -43,7 +45,8 @@ library(ggplot2)
   
   * Non-representative: Add predictors 
 
-* Change or restrict quetions to align closer to the data.
+* Change or restrict questions to align closer to the data.
+
 
 ### Causal Inference {-}
 
@@ -62,26 +65,376 @@ Example:
 
 This section various plotting routines and makes some suggestions, including:
 
+Examples from chapter 9:
+
+* Displaying regression as a function of one input
+
+* Displaying two fitted lines
+
 * Using simulations to display uncertainty (we did this in Ch 9)
+
+New ideas from this chapter:
 
 * Displaying one plot for each input variable, holding others at average value.
 
-* Forming a linear predictor from a multiple regression
+* Forming a linear predictor from a multiple regression to plot outcome $y$ vs the *linear predictor* $\hat{y}=\sum_i \hat{b}_i x_i$
 
 
+## Example: Forming a linear predictor from a multiple regression {-}
+
+From https://github.com/behrman/ros
+
+Simulated data.
 
 ```{r}
+set.seed(33)
 
+n <- 100
+k <- 10
+a <- 1
+b <- 1:k
+theta <- 5
+sigma <- 2
+
+
+data_2 <- 
+  tibble(
+    X = matrix(runif(n * k, min = 0, max = 1), nrow = n, ncol = k),
+    z = rep(0:1, n / 2) %>% sample(),
+    y = as.double(a + X %*% b + theta * z + rnorm(n, mean = 0, sd = sigma))
+  )
 ```
+
+Fit linear regression model.
+
+```{r}
+set.seed(33)
+
+fit_2 <- stan_glm(y ~ X + z, data = data_2, refresh = 0)
+
+fit_2
+```
+
+Outcome vs. predicted value.
+
+```{r}
+data_2 %>%
+  mutate(pred = predict(fit_2)) %>% 
+  ggplot(aes(pred, y, color = factor(z))) +
+  geom_point() +
+  geom_abline(slope = 1, intercept = 0) +
+  coord_fixed() +
+  scale_y_continuous(breaks = scales::breaks_width(10)) +
+  labs(
+    title = "Outcome vs. predicted value",
+    x = "Predicted value",
+    y = "Outcome",
+    color = "Treatment"
+  )
+```
+
+Residual vs. predicted value.
+
+```{r}
+data_2 %>%
+  mutate(
+    pred = predict(fit_2),
+    resid = residuals(fit_2)
+  ) %>% 
+  ggplot(aes(pred, resid, color = factor(z))) +
+  geom_hline(yintercept = 0, color = "white", size = 2) +
+  geom_point() +
+  theme(legend.position = "bottom") +
+  labs(
+    title = "Residual vs. predicted value",
+    x = "Predicted value",
+    y = "Residual",
+    color = "Treatment"
+  )
+```
+
 
 ## Residual plots
 
+* Look for patterns / non-randomness in residual plots.
+
+Example:
+
+```{r}
+data_2 %>%
+  mutate(
+    pred = predict(fit_2),
+    resid = residuals(fit_2)
+  ) %>% 
+  ggplot(aes(pred, resid, color = factor(z))) +
+  geom_hline(yintercept = 0, color = "white", size = 2) +
+  geom_point() +
+  theme(legend.position = "bottom") +
+  labs(
+    title = "Residual vs. predicted value",
+    x = "Predicted value",
+    y = "Residual",
+    color = "Treatment"
+  )
+```
+
+## Using fake data simulation to understand residual plots {-}
+
+Why do we plot residuals vs fitted values rather then observed values? 
+
+```{r}
+scores <- 
+  "data/gradesW4315.dat" %>% 
+  read.table(header = TRUE) %>% 
+  as_tibble()
+
+scores
+```
+
+```{r}
+set.seed(733)
+fit <- stan_glm(final ~ midterm, data = scores, refresh = 0)
+fit
+```
+
+Predicted values and residuals.
+
+```{r}
+v <- 
+  scores %>% 
+  mutate(
+    pred = predict(fit),
+    resid = residuals(fit)
+  )
+```
+
+Residual vs. observed value.
+
+```{r, echo=FALSE}
+v %>% 
+  ggplot(aes(final, resid)) +
+  geom_hline(yintercept = 0, color = "white", size = 2) +
+  geom_point() +
+  scale_x_continuous(breaks = scales::breaks_width(10)) +
+  labs(
+    title = "Residual vs. observed value",
+    x = "Observed value",
+    y = "Residual"
+  )
+```
+
+Residual vs. predicted value.
+
+```{r, echo= FALSE}
+v %>% 
+  ggplot(aes(pred, resid)) +
+  geom_hline(yintercept = 0, color = "white", size = 2) +
+  geom_point() +
+  scale_x_continuous(breaks = scales::breaks_width(5)) +
+  labs(
+    title = "Residual vs. predicted value",
+    x = "Predicted value",
+    y = "Residual"
+  )
+```
+
+### Understanding the choice using fake-data {-}
+
+
+```{r}
+set.seed(746)
+
+intercept <- coef(fit)[["(Intercept)"]]
+slope <- coef(fit)[["midterm"]]
+sigma <- sigma(fit)
+
+scores_sim <- 
+  scores %>% 
+  mutate(
+    pred = intercept + slope * midterm,
+    final_sim = pred + rnorm(n(), mean = 0, sd = sigma),
+    resid = final_sim - pred
+  )
+```
+
+Residual vs. observed value.
+
+```{r, echo = FALSE}
+scores_sim %>% 
+  ggplot(aes(final_sim, resid)) +
+  geom_hline(yintercept = 0, color = "white", size = 2) +
+  geom_point() +
+  scale_x_continuous(breaks = scales::breaks_width(10)) +
+  labs(
+    title = "Residual vs. observed value",
+    x = "Observed value",
+    y = "Residual"
+  )
+```
+
+Residual vs. predicted value.
+
+```{r, echo=FALSE}
+scores_sim %>% 
+  ggplot(aes(pred, resid)) +
+  geom_hline(yintercept = 0, color = "white", size = 2) +
+  geom_point() +
+  scale_x_continuous(breaks = scales::breaks_width(5)) +
+  labs(
+    title = "Residual vs. predicted value",
+    x = "Predicted value",
+    y = "Residual"
+  )
+```
+
+These are the type of plots you would see even *if the model were correct.*
+
+
 ## Comparing data to replications from a fitted model
+
+* Another use of simulation: *posterior predictive checking*.
+
+* Idea is to generate simulated data sets and compare to the observed data.
+
+### Speed of light example {-}
+
+
+(From folder Newcomb at https://github.com/behrman/ros )
+
+```{r, message=FALSE, echo = FALSE}
+newcomb <- read_table("data/newcomb.txt")
+
+newcomb %>% 
+  ggplot(aes(y)) +
+  geom_histogram(binwidth = 4, boundary = 0) +
+  labs(
+    title = 
+      "Distribution of Newcomb's measurements for estimating the speed of light"
+  )
+```
+
+## Fit data to model (fit to constant term) {-}
+
+```{r}
+set.seed(264)
+fit <- stan_glm(y ~ 1, data = newcomb, refresh = 0)
+```
+
+Simulate from the predictive distribution.
+
+```{r}
+set.seed(970)
+
+sims <- as_tibble(fit)
+
+n_sims <- nrow(sims)
+n_newcomb <- nrow(newcomb)
+
+y_rep_tidy <- 
+  sims %>% 
+  mutate(rep = row_number()) %>% 
+  group_by(rep) %>% 
+  reframe(y = rnorm(n_newcomb, mean = `(Intercept)`, sd = sigma))   
+```
+
+`y_rep_tidy` is a tidy tibble with `r n_sims` * `r n_newcomb` rows.
+
+ 
+
+#### Visual comparison of actual and replicated datasets {-}
+
+Plot histograms for 20 sample replicates.
+
+```{r, fig.asp=0.75, echo=FALSE}
+set.seed(792)
+
+y_rep_tidy %>% 
+  filter(rep %in% sample(n_sims, 20)) %>% 
+  ggplot(aes(y)) + 
+  geom_histogram(binwidth = 4, boundary = 0) +
+  facet_wrap(vars(rep), ncol = 5) +
+  labs(title = "Distributions of 20 sample replicates")
+```
+
+ 
+
+ 
+## Compare simulated with observed {-}
+
+Recall from previous chapter, we can more simply simulate using `posterior_predict()`.  
+
+```{r}
+set.seed(970)
+y_rep <- posterior_predict(fit)
+# Each row of the matrix y_rep is 66 columns of simulated `newcomb` data
+```
+
+Verify these are the same thing (using same seed).
+
+```{r}
+v <- matrix(y_rep_tidy$y, nrow = n_sims, ncol = n_newcomb, byrow = TRUE)
+
+max(abs(y_rep - v))
+```
+
+We can use `bayesplot` package to plot kernel density of data and `n_rep` sample replicates t.
+
+```{r}
+set.seed(792)
+
+n_rep <- 100
+
+sims_sample <- sample(n_sims, n_rep)
+
+ppc_dens_overlay(y = newcomb$y, yrep = y_rep[sims_sample, ]) +
+  theme(
+    axis.line.y = element_blank(),
+    text = element_text(family = "sans")
+  )
+```
+
+#### Checking model fit using a numerical data summary {-}
+
+Choose your own statistic! Here we choose the minimum measurement. 
+
+Plot test statistic for data and replicates using bayesplot.
+
+```{r}
+ppc_stat(y = newcomb$y, yrep = y_rep, stat = min, binwidth = 1)
+```
+
+A normal model *clearly* doesn't work, a revised mode might use an asymmetric distribution or long tailed distribution in place of the normal.
+
+## Example: predictive simuilation to check the fit of a time-series model 
+
+* This section illustrates predictive simulation for time series fit.
+
+* Basic idea to to visually examine the simulated time series, and check test statistics (he uses a measure of jaggedness).
+
+* One key observation: The point is not to `reject` the model, but rather to see if the model captures some particular aspect of the data.
 
 ## Residual standard deviation $\sigma$ and explained variance $R^2$
 
 
-##  External validation 
+* $\sigma$ = residual standard deviation. 
+
+* $R^2$ = fraction of variance explained by the model:
+
+$$
+R^2 = 1 - \left(\sigma^2/s_y^2\right)
+$$
+
+* For least squares, can compute $R^2$ directing from 'explained variance':
+
+$$
+R^2 = V_{i=1}^n \hat{y}_i/s_y^2
+$$
+
+Where the $V$ operator capture the sample variance. I.e. this is the ratio of the variance in fitted outcome values to the variance in the unfitted outcome values.
+
+### Difficulties interpreting $\sigma$ and $R^2$
+
+## External validation 
 
 ```{r }
 kidiq <- read.csv("data/kidiq.csv")
