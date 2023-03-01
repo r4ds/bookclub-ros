@@ -1,13 +1,95 @@
 # Assumptions, diagnostics, and model evaluation
 
+```{r, echo=FALSE, message = FALSE}
+library(dplyr)
+library(rstanarm)
+library(ggplot2)
+```
+
 **Learning objectives:**
 
-- THESE ARE NICE TO HAVE BUT NOT ABSOLUTELY NECESSARY
+- Understand the assumptions of the regression model
 
-## SLIDE 1
+- Learn some diagnostics to evaluate reasonableness of the assumptions
 
-- ADD SLIDES AS SECTIONS (`##`).
-- TRY TO KEEP THEM RELATIVELY SLIDE-LIKE; THESE ARE NOTES, NOT THE BOOK ITSELF.
+
+## Assumptions of Regression Analysis
+
+* Validity ("rarely meet all (if any) of these criteria")
+
+   - Model should include all relevant predictors
+   - Outcome should accurely reflect phenomenon of interest
+   - Model should generalize to cases to which it will apply
+   
+* Representativesness 
+
+* Additivity and Linearity
+
+* Independance of errors
+
+* Equal Variance of errors
+
+* Normality of errors ("typically barely important at all"- see exercises 11.3 and 11.6)
+
+### How to Deal With Failures of Assumptions {-}
+
+* Extend model (e.g. measurement error models)
+
+* Change data or model, for example:
+
+  * Failure of additivity: Transform the data 
+
+  * Failure of linearity: Transform predictors, add interactions
+  
+  * Non-representative: Add predictors 
+
+* Change or restrict quetions to align closer to the data.
+
+### Causal Inference {-}
+
+More assumptions are needed if regression is going to be given causal interpretation.
+
+Example:
+
+- Causal: "Effect of a variable with all else held constant", which would be an error for the earnings data! (Effect of increasing height on earnings?)
+
+- Non-causal: "Average difference in earingings comparing two people who differ by height"
+
+
+> More in part 4!
+
+## Plotting the data and fitted model
+
+This section various plotting routines and makes some suggestions, including:
+
+* Using simulations to display uncertainty (we did this in Ch 9)
+
+* Displaying one plot for each input variable, holding others at average value.
+
+* Forming a linear predictor from a multiple regression
+
+
+
+```{r}
+
+```
+
+## Residual plots
+
+## Comparing data to replications from a fitted model
+
+## Residual standard deviation $\sigma$ and explained variance $R^2$
+
+
+##  External validation 
+
+```{r }
+kidiq <- read.csv("data/kidiq.csv")
+head(kidiq)
+```
+
+## Cross Validation
+
 
 ## Meeting Videos
 
