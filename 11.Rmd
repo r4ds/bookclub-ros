@@ -432,7 +432,7 @@ $$
 
 Where the $V$ operator capture the sample variance. I.e. this is the ratio of the variance in fitted outcome values to the variance in the unfitted outcome values.
 
-### Difficulties interpreting $\sigma$ and $R^2$
+### Bayesian $R^2$
 
 ## External validation 
 
