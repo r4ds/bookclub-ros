@@ -538,6 +538,7 @@ kidiq$score <- 0
 ```
 
 ```{r, eval=FALSE}
+set.seed(33)
 for( i in 1:10)
 {
   fit <- stan_glm(kid_score ~ mom_hs + mom_iq, data = kidiq[kidiq$fold != i,], refresh = 0)
@@ -547,7 +548,8 @@ for( i in 1:10)
   {
     pred <- posterior_linpred(fit,newdata = testdat[j,])
     # how can i do this tidy?
-    kidiq[kidiq$row_id == testdat[j,]$row_id,"score"] <- log(mean(dnorm(pred - kidiq$kid_score[i], mean = 0, sd = sigma))) 
+    kidiq[kidiq$row_id == testdat[j,]$row_id,"score"] <-
+      log(mean(dnorm(pred - kidiq$kid_score[i], mean = 0, sd = sigma))) 
   }
 }
 ```
@@ -555,13 +557,13 @@ for( i in 1:10)
 ```{r, eval = FALSE}
 sum(kidiq$score)
 
-# -1898.6
+# -1875.07
 ```
 
 ```{r, eval = FALSE}
 sd(kidiq$score)*sqrt(nrow(kidiq))
 
-# 13.2
+# 11.7
 ```
 
 
