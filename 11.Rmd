@@ -531,6 +531,7 @@ loo_compare(loo_3, loo_1)
 ## K-fold cross validation {-}
 
 ```{r}
+kidiq <- read.csv("data/kidiq.csv")
 # assign each roll to a random fold
 kidiq$fold <- sample(rep(1:10,ceiling(nrow(kidiq)/10)))[1:nrow(kidiq)]
 kidiq <- as_tibble(kidiq) |> mutate(row_id = row_number())
@@ -544,38 +545,37 @@ for( i in 1:10)
   fit <- stan_glm(kid_score ~ mom_hs + mom_iq, data = kidiq[kidiq$fold != i,], refresh = 0)
   testdat <- kidiq[kidiq$fold == i,]
   sigma <- as.data.frame(fit)$sigma
+  
+  # This for look 'smells' , but works
   for(j in 1:nrow(testdat))
   {
     newdat <- testdat[j,]
     pred <- posterior_linpred(fit,newdata = newdat)
-    
-    # is this the tidy way?
-    newdat$score <- log(mean(dnorm(pred - kidiq$kid_score[i], mean = 0, sd = sigma)))
-    kidiq |> rows_update(newdat, by = 'row_id')
-    
-    # they way I did it before.
-   # kidiq[kidiq$row_id == newdat$row_id, "score"] <-
-    #  log(mean(dnorm(pred - kidiq$kid_score[i], mean = 0, sd = sigma))) 
+    testdat[j,]$score <- log(mean(dnorm(pred - newdat$kid_score, mean = 0, sd = sigma)))
   }
+  kidiq <- rows_update(kidiq, testdat, by = 'row_id')
 }
 ```
 
 ```{r, eval = FALSE}
 sum(kidiq$score)
 
-# -1875.07
+# -1877.47
 ```
 
 ```{r, eval = FALSE}
 sd(kidiq$score)*sqrt(nrow(kidiq))
 
-# 11.7
+# 14.3
 ```
 
 
-* There exists a function `kfold` that uses randomly spits the data into k-partitions and fits the data k-times, each time leaving out a different partition. 
+* There exists a function `kfold` that can do all this for you though! 
+
+
 
 ```{r, message = FALSE}
+set.seed(33)
 kfold_3 <- kfold(fit_3)
 kfold_3
 ```
