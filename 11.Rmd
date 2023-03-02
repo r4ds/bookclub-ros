@@ -1,13 +1,614 @@
 # Assumptions, diagnostics, and model evaluation
 
+```{r, echo=FALSE, message = FALSE}
+library(dplyr)
+library(rstanarm)
+library(readr)
+library(ggplot2)
+library(bayesplot)
+```
+
 **Learning objectives:**
 
-- THESE ARE NICE TO HAVE BUT NOT ABSOLUTELY NECESSARY
+- Understand the assumptions of the regression model
 
-## SLIDE 1
+- Learn some diagnostics to evaluate reasonableness of the assumptions
 
-- ADD SLIDES AS SECTIONS (`##`).
-- TRY TO KEEP THEM RELATIVELY SLIDE-LIKE; THESE ARE NOTES, NOT THE BOOK ITSELF.
+
+## Assumptions of Regression Analysis
+
+* Validity ("rarely meet all (if any) of these criteria")
+
+   - Model should include all relevant predictors
+   - Outcome should accurately reflect phenomenon of interest
+   - Model should generalize to cases to which it will apply
+   
+* Representativesness (conditioned on predictors)
+
+* Additivity and Linearity
+
+* Independence of errors
+
+* Equal Variance of errors
+
+* Normality of errors ("typically barely important at all"- see exercises 11.3 and 11.6)
+
+### How to Deal With Failures of Assumptions {-}
+
+* Extend model (e.g. measurement error models)
+
+* Change data or model, for example:
+
+  * Failure of additivity: Transform the data 
+
+  * Failure of linearity: Transform predictors, add interactions
+  
+  * Non-representative: Add predictors 
+
+* Change or restrict questions to align closer to the data.
+
+
+### Causal Inference {-}
+
+More assumptions are needed if regression is going to be given causal interpretation.
+
+Example:
+
+- Causal: "Effect of a variable with all else held constant", which would be an error for the earnings data! (Effect of increasing height on earnings?)
+
+- Non-causal: "Average difference in earnings comparing two people who differ by height"
+
+#### Exercise 11.2: Descriptive and causal inference:
+
+(a) For the model in Section 7.1 predicting presidential vote share from the economy, describe the coefficient for economic growth in purely descriptive, non-causal terms.
+
+(b) Explain the difficulties of interpreting that coefficient as the effect of economic growth on the incumbent party’s vote share
+
+
+> More in part 4!
+
+## Plotting the data and fitted model
+
+This section describes various plotting routines and makes some suggestions, including:
+
+* Displaying regression as a function of one input (ch 9)
+
+* Displaying two fitted lines (ch 9)
+
+* Using simulations to display uncertainty (ch 9)
+
+* Displaying one plot for each input variable, holding others at average value.
+
+* Forming a linear predictor from a multiple regression to plot outcome $y$ vs the *linear predictor* $\hat{y}=\sum_i \hat{b}_i x_i$
+
+
+## Example: Forming a linear predictor from a multiple regression {-}
+
+From https://github.com/behrman/ros
+
+Simulated data.
+
+```{r}
+set.seed(33)
+
+n <- 100
+k <- 10
+a <- 1
+b <- 1:k
+theta <- 5
+sigma <- 2
+
+
+data_2 <- 
+  tibble(
+    X = matrix(runif(n * k, min = 0, max = 1), nrow = n, ncol = k),
+    z = rep(0:1, n / 2) %>% sample(),
+    y = as.double(a + X %*% b + theta * z + rnorm(n, mean = 0, sd = sigma))
+  )
+```
+
+Fit linear regression model.
+
+```{r}
+set.seed(33)
+fit_2 <- stan_glm(y ~ X + z, data = data_2, refresh = 0)
+fit_2
+```
+
+Outcome vs. predicted value.
+
+```{r}
+data_2 %>%
+  mutate(pred = predict(fit_2)) %>% 
+  ggplot(aes(pred, y, color = factor(z))) +
+  geom_point() +
+  geom_abline(slope = 1, intercept = 0) +
+  coord_fixed() +
+  scale_y_continuous(breaks = scales::breaks_width(10)) +
+  labs(
+    title = "Outcome vs. predicted value",
+    x = "Predicted value",
+    y = "Outcome",
+    color = "Treatment"
+  )
+```
+
+
+## Residual plots
+
+* Look for patterns / non-randomness in residual plots.
+
+Example:
+
+```{r}
+data_2 %>%
+  mutate(
+    pred = predict(fit_2),
+    resid = residuals(fit_2)
+  ) %>% 
+  ggplot(aes(pred, resid, color = factor(z))) +
+  geom_hline(yintercept = 0, color = "white", size = 2) +
+  geom_point() +
+  theme(legend.position = "bottom") +
+  labs(
+    title = "Residual vs. predicted value",
+    x = "Predicted value",
+    y = "Residual",
+    color = "Treatment"
+  )
+```
+
+## Using fake data simulation to understand residual plots {-}
+
+Why do we plot residuals vs fitted values rather then observed values? 
+
+```{r}
+scores <- 
+  "data/gradesW4315.dat" %>% 
+  read.table(header = TRUE) %>% 
+  as_tibble()
+
+scores
+```
+
+```{r}
+set.seed(733)
+fit <- stan_glm(final ~ midterm, data = scores, refresh = 0)
+fit
+```
+
+Predicted values and residuals.
+
+```{r}
+v <- 
+  scores %>% 
+  mutate(
+    pred = predict(fit),
+    resid = residuals(fit)
+  )
+```
+
+Residual vs. observed value.
+
+```{r, echo=FALSE}
+v %>% 
+  ggplot(aes(final, resid)) +
+  geom_hline(yintercept = 0, color = "white", size = 2) +
+  geom_point() +
+  scale_x_continuous(breaks = scales::breaks_width(10)) +
+  labs(
+    title = "Residual vs. observed value",
+    x = "Observed value",
+    y = "Residual"
+  )
+```
+
+Residual vs. predicted value.
+
+```{r, echo= FALSE}
+v %>% 
+  ggplot(aes(pred, resid)) +
+  geom_hline(yintercept = 0, color = "white", size = 2) +
+  geom_point() +
+  scale_x_continuous(breaks = scales::breaks_width(5)) +
+  labs(
+    title = "Residual vs. predicted value",
+    x = "Predicted value",
+    y = "Residual"
+  )
+```
+
+### Understanding the choice using fake-data {-}
+
+
+```{r}
+set.seed(746)
+
+intercept <- coef(fit)[["(Intercept)"]]
+slope <- coef(fit)[["midterm"]]
+sigma <- sigma(fit)
+
+scores_sim <- 
+  scores %>% 
+  mutate(
+    pred = intercept + slope * midterm,
+    final_sim = pred + rnorm(n(), mean = 0, sd = sigma),
+    resid = final_sim - pred
+  )
+```
+
+Residual vs. observed value.
+
+```{r, echo = FALSE}
+scores_sim %>% 
+  ggplot(aes(final_sim, resid)) +
+  geom_hline(yintercept = 0, color = "white", size = 2) +
+  geom_point() +
+  scale_x_continuous(breaks = scales::breaks_width(10)) +
+  labs(
+    title = "Residual vs. observed value",
+    x = "Observed value",
+    y = "Residual"
+  )
+```
+
+Residual vs. predicted value.
+
+```{r, echo=FALSE}
+scores_sim %>% 
+  ggplot(aes(pred, resid)) +
+  geom_hline(yintercept = 0, color = "white", size = 2) +
+  geom_point() +
+  scale_x_continuous(breaks = scales::breaks_width(5)) +
+  labs(
+    title = "Residual vs. predicted value",
+    x = "Predicted value",
+    y = "Residual"
+  )
+```
+
+These are the type of plots you would see even *if the model were correct.*
+
+
+## Comparing data to replications from a fitted model
+
+* Another use of simulation: *posterior predictive checking*.
+
+* Idea is to generate simulated data sets and compare to the observed data.
+
+### Speed of light example {-}
+
+
+(From folder Newcomb at https://github.com/behrman/ros )
+
+```{r, message=FALSE, echo = FALSE}
+newcomb <- read_table("data/newcomb.txt")
+
+newcomb %>% 
+  ggplot(aes(y)) +
+  geom_histogram(binwidth = 4, boundary = 0) +
+  labs(
+    title = 
+      "Distribution of Newcomb's measurements for estimating the speed of light"
+  )
+```
+
+## Fit data to model (fit to constant term) {-}
+
+```{r}
+set.seed(264)
+fit <- stan_glm(y ~ 1, data = newcomb, refresh = 0)
+```
+
+Simulate from the predictive distribution.
+
+```{r}
+set.seed(970)
+
+sims <- as_tibble(fit)
+
+n_sims <- nrow(sims)
+n_newcomb <- nrow(newcomb)
+
+y_rep_tidy <- 
+  sims %>% 
+  mutate(rep = row_number()) %>% 
+  group_by(rep) %>% 
+  reframe(y = rnorm(n_newcomb, mean = `(Intercept)`, sd = sigma))   
+```
+
+`y_rep_tidy` is a tidy tibble with `r n_sims` * `r n_newcomb` rows.
+
+ 
+
+#### Visual comparison of actual and replicated datasets {-}
+
+Plot histograms for 20 sample replicates.
+
+```{r, fig.asp=0.75, echo=FALSE}
+set.seed(792)
+
+y_rep_tidy %>% 
+  filter(rep %in% sample(n_sims, 20)) %>% 
+  ggplot(aes(y)) + 
+  geom_histogram(binwidth = 4, boundary = 0) +
+  facet_wrap(vars(rep), ncol = 5) +
+  labs(title = "Distributions of 20 sample replicates")
+```
+
+ 
+
+ 
+## Compare simulated with observed {-}
+
+Recall from previous chapter, we can more simply simulate using `posterior_predict()`.  
+
+```{r}
+set.seed(970)
+y_rep <- posterior_predict(fit)
+# Each row of the matrix y_rep is 66 columns of simulated `newcomb` data
+```
+
+Verify these are the same thing (using same seed).
+
+```{r}
+v <- matrix(y_rep_tidy$y, nrow = n_sims, ncol = n_newcomb, byrow = TRUE)
+
+max(abs(y_rep - v))
+```
+
+We can use `bayesplot` package to plot kernel density of data and `n_rep` sample replicates t.
+
+```{r}
+set.seed(792)
+
+n_rep <- 100
+
+sims_sample <- sample(n_sims, n_rep)
+
+ppc_dens_overlay(y = newcomb$y, yrep = y_rep[sims_sample, ]) +
+  theme(
+    axis.line.y = element_blank(),
+    text = element_text(family = "sans")
+  )
+```
+
+#### Checking model fit using a numerical data summary {-}
+
+Choose your own statistic! Here we choose the minimum measurement. 
+
+Plot test statistic for data and replicates using bayesplot.
+
+```{r}
+ppc_stat(y = newcomb$y, yrep = y_rep, stat = min, binwidth = 1)
+```
+
+A normal model *clearly* doesn't work, a revised model might use an asymmetric distribution or long tailed distribution in place of the normal.
+
+## Example: predictive simulation to check the fit of a time-series model 
+
+* This section illustrates predictive simulation for time series fit.
+
+* Basic idea to to visually examine the simulated time series, and check test statistics (he uses a measure of jaggedness).
+
+* One key observation: The point is not to `reject` the model, but rather to see if the model captures some particular aspect of the data.
+
+## Residual standard deviation $\sigma$ and explained variance $R^2$
+
+
+* $\sigma$ = residual standard deviation. 
+
+* $R^2$ = fraction of variance explained by the model:
+
+$$
+R^2 = 1 - \left(\sigma^2/s_y^2\right)
+$$
+
+* For least squares, can compute $R^2$ directing from 'explained variance':
+
+$$
+R^2 = V_{i=1}^n \hat{y}_i/s_y^2
+$$
+
+Where the $V$ operator capture the sample variance. I.e. this is the ratio of the variance in fitted outcome values to the variance in the unfitted outcome values.
+
+### Bayesian $R^2$
+
+* Bayesian inference is not least squares, so the two formulas given previously can disagree. (Influence of the prior.)
+
+* Bayesian inference includes additional uncertainty beyond the point estimate that should be included
+
+* This leads to an alternative *definition* of $R^2$ for each posterior draw $s$:
+
+$$
+\text{Bayesian } R_s^2= \frac{V_{i=1}^n \hat{y}_i^s}{V_{i=1}^n \hat{y}_i^s + \sigma_s^2}
+$$
+
+This can computed in `R` using `bayes_R2(fit)`.  This will give draws of $R^2$ which expresses also the uncertainty in $R^2$. 
+
+```{r, echo=FALSE }
+kidiq <- read.csv("data/kidiq.csv")
+```
+
+For example for the model predicting child's test score from given mothers score on IQ and mother's high school status:
+
+```{r}
+fit_iq <- stan_glm(kid_score ~ mom_hs + mom_iq, data = kidiq, refresh=0)
+r2 <- bayes_R2(fit_iq)
+hist(r2)
+```
+
+## External validation 
+
+* Most *fundamental* way to test a model is to use it to test it's ability to make predictions.
+
+* This requires some additional observations that were not used in fitting the mode, perhaps from future observation as in the test score example in the book. 
+
+
+## Cross Validation
+
+* One would like to evaluate and compare models without waiting for new data. 
+
+* Cross validation uses a hold out from the observed data as a proxy for future data.  The performance is determined by averaging over different hold outs. 
+
+* Different partitions can be used:
+
+   * LOO (Leave one out) 
+   
+   * k - Fold partitions
+   
+   * Leave-one-group-out - For grouped data (Beyond scope of book)
+   
+   * Leave-future-out - Also called 'walk forward' for time series data (Beyond scope of book)
+
+## Leave-one-out cross validation {-}
+
+* Naive implementation requires `n` fits, one for each held out data point.
+
+* To compare models, we can use the *elpd* which summarizes how good they are at predicting new data.  The epld (expected log predictive density) measures how well the model predicts new data as the sum over of the log of the pointwise probability of a new dataset $y$ from the fitted model.  It can be estimated from cross validation (https://arxiv.org/pdf/1507.04544.pdf):
+
+$$
+\text{epld}_{\text{loo}}=\sum_{i=1}^n\log{p(y_i|y_{-i})}
+$$
+where
+
+$$
+{p(y_i|y_{-i})} = \int p(y_i|\theta)p(\theta|y_{i-1})d\theta
+$$
+is the leave-one-out predictive density given the data without the ith data point.
+
+Doing this brute force is ... brutal.
+
+```{r, eval=FALSE}
+scores <- rep(0,nrow(kidiq))
+for(i in 1:nrow(kidiq))
+{
+  fit <- stan_glm(kid_score ~ mom_hs + mom_iq, data = kidiq[-i,], refresh = 0)
+  pred <- posterior_linpred(fit,newdata = kidiq[i,])
+  sigma <- as.data.frame(fit)$sigma
+  if(i%%50 ==0 ) print(i)
+  scores[i] <- log(mean(dnorm(pred - kidiq$kid_score[i], mean = 0, sd = sigma))) 
+}
+```
+
+```{r, eval = FALSE}
+sum(scores)
+
+# -1875.999
+```
+
+```{r, eval = FALSE}
+sd(scores)*sqrt(nrow(kidiq))
+
+# 14.225
+```
+
+```{r}
+test = stan_glm(kid_score ~ mom_hs + mom_iq, data = kidiq, refresh = 0)
+```
+
+* `rstan` has a function `loo` that can shortcut this using an approximation based on probability calculations.
+
+* This function returns `elpd_loo` -
+```{r}
+fit_3 <- stan_glm(kid_score ~ mom_hs + mom_iq, data = kidiq, refresh = 0)
+loo_3 <- loo(fit_3)
+loo_3
+```
+
+* Mostly useful to compare models.
+
+* One diagnostic message worth noting: if you get a warning about `Pareto k estimates are unstable`, then consider k-fold cross validation.
+
+* To compare two models:
+   
+```{r}
+fit_1 <- stan_glm(kid_score ~ mom_hs, data = kidiq, refresh =0 )
+loo_1 <- loo(fit_1)
+loo_compare(loo_3, loo_1)
+```
+
+## K-fold cross validation {-}
+
+```{r}
+kidiq <- read.csv("data/kidiq.csv")
+# assign each roll to a random fold
+kidiq$fold <- sample(rep(1:10,ceiling(nrow(kidiq)/10)))[1:nrow(kidiq)]
+kidiq <- as_tibble(kidiq) |> mutate(row_id = row_number())
+kidiq$score <- 0
+```
+
+```{r, eval=FALSE}
+set.seed(33)
+for( i in 1:10)
+{
+  fit <- stan_glm(kid_score ~ mom_hs + mom_iq, data = kidiq[kidiq$fold != i,], refresh = 0)
+  testdat <- kidiq[kidiq$fold == i,]
+  sigma <- as.data.frame(fit)$sigma
+  
+  # This for loop 'smells' , but works
+  for(j in 1:nrow(testdat))
+  {
+    newdat <- testdat[j,]
+    pred <- posterior_linpred(fit,newdata = newdat)
+    testdat[j,]$score <- log(mean(dnorm(pred - newdat$kid_score, mean = 0, sd = sigma)))
+  }
+  kidiq <- rows_update(kidiq, testdat, by = 'row_id')
+}
+```
+
+```{r, eval = FALSE}
+sum(kidiq$score)
+
+# -1877.47
+```
+
+```{r, eval = FALSE}
+sd(kidiq$score)*sqrt(nrow(kidiq))
+
+# 14.3
+```
+
+
+* There exists a function `kfold` that can do all this for you though! 
+
+
+
+```{r, message = FALSE}
+set.seed(33)
+kfold_3 <- kfold(fit_3)
+kfold_3
+```
+
+* The results are compatable with `loo_compare`
+
+```{r, message = FALSE}
+kfold_1 <- kfold(fit_1)
+loo_compare(kfold_1,kfold_3)
+```
+
+
+## Chat GPT Poem {-}
+
+```
+You have many models to choose
+But which one will win or lose?
+Use elpd to evaluate
+Measure how models anticipate
+
+
+ELPD is the expected log predictive density
+It sums up the log of the probability
+Of seeing a new dataset based on the model you fit
+The higher the elpd, the better it is
+
+
+ELPD can be estimated in different ways
+You can use cross-validation or Bayesian LOO
+But whichever method you choose to use
+Remember that elpd is just one clue
+```
+
 
 ## Meeting Videos
 
