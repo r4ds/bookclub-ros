@@ -20,14 +20,14 @@ library(bayesplot)
 * Validity ("rarely meet all (if any) of these criteria")
 
    - Model should include all relevant predictors
-   - Outcome should accurely reflect phenomenon of interest
+   - Outcome should accurately reflect phenomenon of interest
    - Model should generalize to cases to which it will apply
    
 * Representativesness (conditioned on predictors)
 
 * Additivity and Linearity
 
-* Independance of errors
+* Independence of errors
 
 * Equal Variance of errors
 
@@ -56,7 +56,7 @@ Example:
 
 - Causal: "Effect of a variable with all else held constant", which would be an error for the earnings data! (Effect of increasing height on earnings?)
 
-- Non-causal: "Average difference in earingings comparing two people who differ by height"
+- Non-causal: "Average difference in earnings comparing two people who differ by height"
 
 #### Exercise 11.2: Descriptive and causal inference:
 
@@ -383,9 +383,9 @@ Plot test statistic for data and replicates using bayesplot.
 ppc_stat(y = newcomb$y, yrep = y_rep, stat = min, binwidth = 1)
 ```
 
-A normal model *clearly* doesn't work, a revised mode might use an asymmetric distribution or long tailed distribution in place of the normal.
+A normal model *clearly* doesn't work, a revised model might use an asymmetric distribution or long tailed distribution in place of the normal.
 
-## Example: predictive simuilation to check the fit of a time-series model 
+## Example: predictive simulation to check the fit of a time-series model 
 
 * This section illustrates predictive simulation for time series fit.
 
@@ -418,7 +418,7 @@ Where the $V$ operator capture the sample variance. I.e. this is the ratio of th
 
 * Bayesian inference includes additional uncertainty beyond the point estimate that should be included
 
-* This leads to an aleternative *definition* of $R^2$ for each posterior draw $s$:
+* This leads to an alternative *definition* of $R^2$ for each posterior draw $s$:
 
 $$
 \text{Bayesian } R_s^2= \frac{V_{i=1}^n \hat{y}_i^s}{V_{i=1}^n \hat{y}_i^s + \sigma_s^2}
