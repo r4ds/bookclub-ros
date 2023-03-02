@@ -58,22 +58,24 @@ Example:
 
 - Non-causal: "Average difference in earingings comparing two people who differ by height"
 
+#### Exercise 11.2: Descriptive and causal inference:
+
+(a) For the model in Section 7.1 predicting presidential vote share from the economy, describe the coefficient for economic growth in purely descriptive, non-causal terms.
+
+(b) Explain the difficulties of interpreting that coefficient as the effect of economic growth on the incumbent party’s vote share
+
 
 > More in part 4!
 
 ## Plotting the data and fitted model
 
-This section various plotting routines and makes some suggestions, including:
+This section describes various plotting routines and makes some suggestions, including:
 
-Examples from chapter 9:
+* Displaying regression as a function of one input (ch 9)
 
-* Displaying regression as a function of one input
+* Displaying two fitted lines (ch 9)
 
-* Displaying two fitted lines
-
-* Using simulations to display uncertainty (we did this in Ch 9)
-
-New ideas from this chapter:
+* Using simulations to display uncertainty (ch 9)
 
 * Displaying one plot for each input variable, holding others at average value.
 
@@ -109,9 +111,7 @@ Fit linear regression model.
 
 ```{r}
 set.seed(33)
-
 fit_2 <- stan_glm(y ~ X + z, data = data_2, refresh = 0)
-
 fit_2
 ```
 
@@ -129,26 +129,6 @@ data_2 %>%
     title = "Outcome vs. predicted value",
     x = "Predicted value",
     y = "Outcome",
-    color = "Treatment"
-  )
-```
-
-Residual vs. predicted value.
-
-```{r}
-data_2 %>%
-  mutate(
-    pred = predict(fit_2),
-    resid = residuals(fit_2)
-  ) %>% 
-  ggplot(aes(pred, resid, color = factor(z))) +
-  geom_hline(yintercept = 0, color = "white", size = 2) +
-  geom_point() +
-  theme(legend.position = "bottom") +
-  labs(
-    title = "Residual vs. predicted value",
-    x = "Predicted value",
-    y = "Residual",
     color = "Treatment"
   )
 ```
@@ -434,15 +414,94 @@ Where the $V$ operator capture the sample variance. I.e. this is the ratio of th
 
 ### Bayesian $R^2$
 
+* Bayesian inference is not least squares, so the two formulas given previously can disagree. (Influence of the prior.)
+
+* Bayesian inference includes additional uncertainty beyond the point estimate that should be included
+
+* This leads to an aleternative *definition* of $R^2$ for each posterior draw $s$:
+
+$$
+\text{Bayesian } R_s^2= \frac{V_{i=1}^n \hat{y}_i^s}{V_{i=1}^n \hat{y}_i^s + \sigma_s^2}
+$$
+
+This can computed in `R` using `bayes_R2(fit)`.  This will give draws of $R^2$ which expresses also the uncertainty in $R^2$. 
+
+```{r, echo=FALSE }
+kidiq <- read.csv("data/kidiq.csv")
+```
+
+For example for the model predicting child's test score from given mothers score on IQ and mother's high school status:
+
+```{r}
+fit_iq <- stan_glm(kid_score ~ mom_hs + mom_iq, data = kidiq, refresh=0)
+r2 <- bayes_R2(fit_iq)
+hist(r2)
+```
+
 ## External validation 
 
-```{r }
-kidiq <- read.csv("data/kidiq.csv")
-head(kidiq)
-```
+* Most *fundamental* way to test a model is to use it to test it's ability to make predictions.
+
+* This requires some additional observations that were not used in fitting the mode, perhaps from future observation as in the test score example in the book. 
+
 
 ## Cross Validation
 
+* One would like to evaluate and compare models without waiting for new data. 
+
+* Cross validation uses a hold out from the observed data as a proxy for future data.  The performance is determined by averaging over different hold outs. 
+
+* Different partitions can be used:
+
+   * LOO (Leave one out) 
+   
+   * k - Fold partitions
+   
+   * Leave-one-group-out - For grouped data (Beyond scope of book)
+   
+   * Leave-future-out - Also called 'walk forward' for time series data (Beyond scope of book)
+
+## Leave-one-out cross validation {-}
+
+* Naive implementation would require `n` fits, one for each held out data point.
+
+* `rstan` has a function `loo` that can shortcut this using an approximation based on probability calculations.
+
+* This function returns `elpd_loo` - expected log predictive density and it's standard error (amoung other things).  This is the sum of the log of the probability of outcome $y$ given predictors $x%. (Averaged over the parameter draws?)
+
+```{r}
+fit_3 <- stan_glm(kid_score ~ mom_hs + mom_iq, data = kidiq, refresh = 0)
+loo_3 <- loo(fit_3)
+loo_3
+```
+
+* Mostly useful to compare models.
+
+* One diagnostic message worth noting: if you get a warning about `Pareto k estimates are unstable`, then consider k-fold cross validation.
+
+* To compare two models:
+   
+```{r}
+fit_1 <- stan_glm(kid_score ~ mom_hs, data = kidiq, refresh =0 )
+loo_1 <- loo(fit_1)
+loo_compare(loo_3, loo_1)
+```
+
+## K-fold cross validation {-}
+
+* There exists a function `kfold` that uses randomly spits the data into k-partitions and fits the data k-times, each time leaving out a different partition. 
+
+```{r, message = FALSE}
+kfold_3 <- kfold(fit_3)
+kfold_3
+```
+
+* The results are compatable with `loo_compare`
+
+```{r, message = FALSE}
+kfold_1 <- kfold(fit_1)
+loo_compare(kfold_1,kfold_3)
+```
 
 ## Meeting Videos
 
