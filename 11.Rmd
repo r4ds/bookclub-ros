@@ -477,6 +477,7 @@ $$
 $$
 is the leave-one-out predictive density given the data without the ith data point.
 
+Doing this brute force is ... brutal.
 
 ```{r, eval=FALSE}
 scores <- rep(0,nrow(kidiq))
@@ -528,6 +529,41 @@ loo_compare(loo_3, loo_1)
 ```
 
 ## K-fold cross validation {-}
+
+```{r}
+# assign each roll to a random fold
+kidiq$fold <- sample(rep(1:10,ceiling(nrow(kidiq)/10)))[1:nrow(kidiq)]
+kidiq <- as_tibble(kidiq) |> mutate(row_id = row_number())
+kidiq$score <- 0
+```
+
+```{r, eval=FALSE}
+for( i in 1:10)
+{
+  fit <- stan_glm(kid_score ~ mom_hs + mom_iq, data = kidiq[kidiq$fold != i,], refresh = 0)
+  testdat <- kidiq[kidiq$fold == i,]
+  sigma <- as.data.frame(fit)$sigma
+  for(j in 1:nrow(testdat))
+  {
+    pred <- posterior_linpred(fit,newdata = testdat[j,])
+    # how can i do this tidy?
+    kidiq[kidiq$row_id == testdat[j,]$row_id,"score"] <- log(mean(dnorm(pred - kidiq$kid_score[i], mean = 0, sd = sigma))) 
+  }
+}
+```
+
+```{r, eval = FALSE}
+sum(kidiq$score)
+
+# -1898.6
+```
+
+```{r, eval = FALSE}
+sd(kidiq$score)*sqrt(nrow(kidiq))
+
+# 13.2
+```
+
 
 * There exists a function `kfold` that uses randomly spits the data into k-partitions and fits the data k-times, each time leaving out a different partition. 
 
