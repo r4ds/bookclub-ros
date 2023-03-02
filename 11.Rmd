@@ -546,7 +546,7 @@ for( i in 1:10)
   testdat <- kidiq[kidiq$fold == i,]
   sigma <- as.data.frame(fit)$sigma
   
-  # This for look 'smells' , but works
+  # This for loop 'smells' , but works
   for(j in 1:nrow(testdat))
   {
     newdat <- testdat[j,]
