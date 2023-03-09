@@ -465,10 +465,10 @@ hist(r2)
 
 * Naive implementation requires `n` fits, one for each held out data point.
 
-* To compare models, we can use the *elpd* which summarizes how good they are at predicting new data.  The epld (expected log predictive density) measures how well the model predicts new data as the sum over of the log of the pointwise probability of a new dataset $y$ from the fitted model.  It can be estimated from cross validation (https://arxiv.org/pdf/1507.04544.pdf):
+* To compare models, we can use the *elpd* which summarizes how good they are at predicting new data.  The elpd (expected log predictive density) measures how well the model predicts new data as the sum over of the log of the pointwise probability of a new dataset $y$ from the fitted model.  It can be estimated from cross validation (https://arxiv.org/pdf/1507.04544.pdf):
 
 $$
-\text{epld}_{\text{loo}}=\sum_{i=1}^n\log{p(y_i|y_{-i})}
+\text{elpd}_{\text{loo}}=\sum_{i=1}^n\log{p(y_i|y_{-i})}
 $$
 where
 
@@ -532,7 +532,7 @@ loo_compare(loo_3, loo_1)
 
 ```{r}
 kidiq <- read.csv("data/kidiq.csv")
-# assign each roll to a random fold
+# assign each row to a random fold
 kidiq$fold <- sample(rep(1:10,ceiling(nrow(kidiq)/10)))[1:nrow(kidiq)]
 kidiq <- as_tibble(kidiq) |> mutate(row_id = row_number())
 kidiq$score <- 0
