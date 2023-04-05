@@ -70,7 +70,7 @@ Logistic regression :
 ```{r}
 set.seed(660)
 
-fit <-
+fit_1 <-
   stan_glm(
     rvote ~ income,
     family = binomial(link = "logit"),  # this make sit logistic
@@ -78,7 +78,7 @@ fit <-
     refresh = 0  # Supress rows of updates
   )
 
-fit
+fit_1
 ```
 Lets plot it;
 
@@ -86,7 +86,7 @@ Lets plot it;
 v <- 
   tibble(
     income = seq(-1,7),
-    .pred = predict(fit, type = "response", newdata = tibble(income))
+    .pred = predict(fit_1, type = "response", newdata = tibble(income))
   )
 
 v %>% 
@@ -119,11 +119,11 @@ nes_counts <- nes %>%
 
 ```{r, fig.asp=0.75, echo = FALSE}
 new <- tibble(income = seq(1,5))
-linpred <- posterior_linpred(fit, newdata = new)
+linpred <- posterior_linpred(fit_1, newdata = new)
 v <- 
   new %>% 
   mutate(
-    .pred = predict(fit, type = "response", newdata = new),
+    .pred = predict(fit_1, type = "response", newdata = new),
     `5%`  = apply(linpred, 2, quantile, probs = 0.05) %>% plogis(),
     `25%` = apply(linpred, 2, quantile, probs = 0.25) %>% plogis(),
     `75%` = apply(linpred, 2, quantile, probs = 0.75) %>% plogis(),
@@ -153,11 +153,41 @@ v %>%
 
 ## Intepreting regression coefficients
 
-* Nonlinearity of logistic function -> impact depends on where you evaluate the function. The averages of the predictors is a useful start.
+* Nonlinearity of logistic function -> impact depends on where you evaluate the function. 
 
-* The intercept 
+* The averages of the predictors is a useful start.
+
+Intercept is not interesting at '0' income, so evaluate at mean:
+
+```{r}
+invlogit(coef(fit_1)[1] + coef(fit_1)[2]*mean(nes$income) )
+```
+
+* A difference of income = 0.33 on the logit scale. As an example we can find the difference in probability near the mean income (about 3): 
+
+```{r}
+invlogit(coef(fit_1)[1] + coef(fit_1)[2]*3 ) -
+   invlogit(coef(fit_1)[1] + coef(fit_1)[2]*2 )
+```
+So near the average income, a change in 1 income class gives about 0.07 increase in probability of voting for bush
+
+* Divide-by-4: The steapest slope (upper bound on effect on probability) occurs for p=0.5, and is equal to $\beta/4$ . The can be used as a rule of convenience.  For our case, the probabilities are near 0.5, and rule of 4 gives:
+
+```{r}
+coef(fit_1)[2]/4
+```
+So the upper bound on the effect of increasing income category here is 0.08
+
+What about confidence interval in that:
+
+```{r}
+posterior_interval(fit_1)['income',]/4
+```
+
 
 ## Predictions and Comparisons
+
+
 
 ## Latent-data formulation
 
