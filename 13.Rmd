@@ -1,8 +1,20 @@
 # Logistic regression
 
+```{r, echo=FALSE, message = FALSE}
+library(dplyr)
+library(rstanarm)
+library(readr)
+library(ggplot2)
+library(bayesplot)
+```
+
 **Learning objectives:**
 
-- THESE ARE NICE TO HAVE BUT NOT ABSOLUTELY NECESSARY
+- Introduce logistic regression
+
+- Learn to interpret coefficients
+
+- Learn about latent-data formulation
 
 ## SLIDE 1
 
