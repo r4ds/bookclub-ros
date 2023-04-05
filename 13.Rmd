@@ -225,6 +225,8 @@ As usual, the advantage of Bayesian is we can get the mean *and* standard deviat
 print(c(mean(epred), sd(epred)))
 ```
 
+Note that `mean(epred)` is exactly what `predict` returned (with type = 'response')
+
 *  `posterior_predict` - generate random predictions using the posterior probability .
 
 
@@ -242,11 +244,240 @@ ppred[0:10]
 ```{r}
 mean(ppred)
 ```
+
 ## Latent-data formulation
 
-* Alternate formulation using a continuous 'latent' variable $z_i
+* Alternate formulation using a continuous 'latent' variable $z_i. It is completely equivalent to the logistic regression.
 
 * 'latent' means unobserved
+
+$$
+\begin{align}
+y_i &= \begin{cases}
+                1 & \text{if } z_i > 0 \\
+                0 &\text{if } z_i < 0 \\
+      \end{cases} \\
+
+z_i &= X_i\beta + \epsilon_i 
+\end{align}
+$$
+
+Here the $\epsilon_i$ are independent and have the *logistic* distribution:
+
+```{r, echo = FALSE}
+logiplot <- tibble(
+  x = seq(-60,60)/10,
+  p = dlogis(x))
+logiplot |> ggplot(aes(x=x, y=p)) +
+  geom_line()
+```
+
+
+
+* The distribution of the error terms is similar to a Gaussian with $\sigma = 1.6$. What we relaxed that and use a Gaussian fit $\sigma$ ?
+
+* Answer: It wont work because the 'latent' scale parameter $\sigma$ is non-identifiable. You can pick any $\sigma you want and you can get the same predictions by scaling the slope and intercept!
+
+* So why bother?
+
+   * In some settings direct information is available for the $z_i$'s 
+    
+   * We will see in later chapters this latent formulation can be useful.
+   
+## Maximum likelihood and Bayesian inference
+
+* Likelihood:
+
+$$
+p(y\mid\beta,X) = \prod_{i=1}^n(\text{logit}^{-1}(X_i\beta))^{y_i}(1-\text{logit}^{-1}(X_i\beta))^{1-y_i}
+$$
+* The $\beta$ that maximizes this is the can be found by iterative techniques (implemented by `glm` for example)
+
+* Bayesian inference with uniform prior
+
+   * with `prior=NULL, prior_intercept=NULL` this is same as maximum likelihood
+
+   * Benefit is  you get simulations of full posterior (not just maximum)! 
+   
+   * But don't do this, use priors! (At minimum provides some regularization)
+   
+* `stan_glm` by default uses weakly informative priors
+
+* If prior information is available, use it!
+
+## Example comparing maximum likelihood and Bayesian inference {-}
+
+* Simulation study, $p = \text{logit}^{-1}(a + b x)$. 
+
+* Assume that we expect b to fall approximately between 0 and 1 and impose a prior with mean 0.5 and standard devation 0.5. Stick with default prior on intercept
+
+* This example is adapted from the `tidyros` repo!
+https://github.com/behrman/ros
+
+```{r}
+bayes_sim <- function(n, a = -2, b = 0.8) {
+  data <- 
+    tibble(
+      x = runif(n, min = -1, max = 1),
+      y = if_else(0 < rlogis(n, location = a + b * x, scale = 1), 1, 0)
+    )
+  
+  fit_glm <- glm(y ~ x, family = binomial(link = "logit"), data = data)
+  fit_stan <- 
+    stan_glm(
+      y ~ x,
+      family = binomial(link = "logit"),
+      data = data,
+      refresh = 0,
+      prior = normal(location = 0.5, scale = 0.5)
+    )
+  
+  arm::display(fit_glm, digits = 1)
+  cat("\n")
+  print(fit_stan, digits = 1)
+}
+```
+
+We next simulate for a range of sample sizes, each time focusing on inference about b, for which a value of 0.8 was used to generate the data.
+
+#### n = 10{-}
+
+```{r}
+set.seed(363852)
+
+bayes_sim(10)
+```
+
+* Focus on the coefficient of x, which represents the parameter of interest in this hypothetical study.
+
+* `glm()` gives a maximum likelihood estimate of 1.5 with large error, indicating little info in 10 data points
+
+* `stan_glm()` estimate is influenced by the prior. 0.6 is close to the prior mean of 0.5, being pulled away by the data only slightly.
+
+#### n = 100 {-}
+
+```{r}
+bayes_sim(100)
+```
+
+* The maximum likelihood estimate is again extreme, but less so.
+
+*  Bayes estimate is again pulled toward the prior mean of 0.5, but less so than before.
+
+#### n = 1000 {-}
+
+```{r}
+bayes_sim(1000)
+```
+
+* At n=1000, the prior no longer has much if any impact.
+
+
+## Cross validation and log score for logistic regression
+
+* As in Section 11.8, we can use `loo` crossvalidation to compare models.  In this case the log score is:
+
+$$
+\text{log score} = \sum_{i=1}^{n^{\text{new}}}y_i\log{p_i^{\text{new}}}+(1-y_i)\log{(1-p_i^{\text{new}})}
+$$
+
+* For calibration purposes: If you have no info and simply assign p=0.5 for every outcome, the log score is $-0.693n^{\text{new}}$.
+
+
+* Examples using `loo` will be given in the next session
+
+## Building a logisic regression model
+
+* Instead of going through the well example, lets look at exercise 13.1.  This uses the NES data but looking at more variables. There are 70 total in the data set. i picked out some of them. Note that there was also a 'race' categorical but I could not find figure out the categories. (A preliminary model not shown here indicates that race =2 is the only strong predictor)
+
+part a+ b:
+
+```{r}
+file_nes <- here::here("data/nes.txt")
+nes92 <-
+  file_nes %>% 
+  read.table() %>% 
+  as_tibble() %>%
+  filter(year == 1992) %>%
+  filter(xor(dvote, rvote)) %>%
+  select(rvote, age, female, black, educ1, educ2, educ3, income)
+```
+
+```{r}
+pairs(~ educ1 + educ2 + educ3, data = nes92)
+
+```
+
+educ1 seems to be on a different scale. I am just going to combine 2 and 3 and call it good for this exercise.
+
+```{r}
+nes92 <- nes92 |> mutate(educ = (educ2 + educ3)/2)
+```
+
+ 
+I will treat education as continuous just as was done for income.
+
+I included some interactions that apriori seem important
+
+```{r}
+fit_all <- stan_glm(rvote ~ educ + black + income + female + age + age:black + income:black + female:income, data = nes92, family=binomial(link= 'logit'), refresh = 0)
+print(fit_all, digits = 3)
+```
+
+
+Lets look at loo. The baseline loo is
+
+```{r}
+-0.693*nrow(nes92)
+```
+
+
+```{r}
+loo_all <- loo(fit_all)
+loo_all
+```
+
+Simplify a bit by droping the poorest predictors
+
+
+```{r}
+fit_2 <- stan_glm(rvote ~ educ + black + income + age + female + female:income, data = nes92, family=binomial(link= 'logit'), refresh = 0)
+print(fit_2, digits = 3)
+```
+
+```{r}
+loo_2 <- loo(fit_2)
+loo_2
+```
+
+Ok and lets try even simpler:
+
+```{r}
+fit_3 <- stan_glm(rvote ~ black + income + female + female:income, data = nes92, family=binomial(link= 'logit'), refresh = 0)
+print(fit_3, digits = 3)
+```
+```{r}
+loo_3 <- loo(fit_3)
+loo_3
+```
+
+Finally, leave out the last interaction:
+
+```{r}
+fit_4 <- stan_glm(rvote ~ black + income + female, data = nes92, family=binomial(link= 'logit'), refresh = 0)
+print(fit_4, digits = 3)
+loo_4 <- loo(fit_4)
+```
+
+
+```{r}
+loo_compare(loo_all,  loo_2, loo_3, loo_4)
+```
+From this, the simplest fit with the interaction is best, but it is not strongly significant. 
+
+c) Looking at fit_3, what are the important variables? Disucss during meeting.
+
+
 
 ## Meeting Videos
 
