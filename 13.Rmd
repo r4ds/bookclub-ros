@@ -16,10 +16,154 @@ library(bayesplot)
 
 - Learn about latent-data formulation
 
-## SLIDE 1
+## Logistic regression with a single predictor
 
-- ADD SLIDES AS SECTIONS (`##`).
-- TRY TO KEEP THEM RELATIVELY SLIDE-LIKE; THESE ARE NOTES, NOT THE BOOK ITSELF.
+Logistic function maps $(0,1)$ to $(-\infty, \infty)$:
+
+$$
+\text{logit}(x) = log\left(\frac{x}{1-x}\right)
+$$
+
+Also known as 'log odds', this can be used to map probabilities to the whole real line.
+
+The inverse is $\text{logit}^{-1}$ or 'sigmoid' function:
+
+$$
+\text{logit}^{-1}  = \frac{e^x}{1 + e^x}
+$$
+This maps the real line to probabilities.
+
+In `R` we can use the logistic distribution:
+```{r}
+logit <- qlogis
+inlogit <- plogis
+```
+
+This mapping allows us to expand our linear regression into models with two outcomes $y_i \in \{0,1\}$
+
+$$
+Pr(y_i = 1) = \text{logit}^{-1}(X_i\beta)
+$$
+
+* Note that all the uncertainty comes for the probabilistic prediction of the binary outcome.
+
+## Example {-}
+
+* This example uses national election data, which has a lot of columns of data for every election from 1952 to 2000. For this example we are only concerned with the 1992 election and the impact of income on preference between Bush (y=1) and Bill Clinton. 
+
+* The code below is modified from the `tidyros` repo.
+
+```{r}
+file_nes <- here::here("data/nes.txt")
+nes <-
+  file_nes %>% 
+  read.table() %>% 
+  as_tibble() %>%
+  select(year, income, dvote, rvote) %>%
+  filter(xor(dvote, rvote))  %>%  # only those with pref
+  filter(year == 1992)
+
+nes |> count(dvote, rvote)
+```
+Logistic regression :
+
+```{r}
+set.seed(660)
+
+fit <-
+  stan_glm(
+    rvote ~ income,
+    family = binomial(link = "logit"),  # this make sit logistic
+    data = nes,
+    refresh = 0  # Supress rows of updates
+  )
+
+fit
+```
+Lets plot it;
+
+```{r, fig.asp=0.75, echo=FALSE}
+v <- 
+  tibble(
+    income = seq(-1,7),
+    .pred = predict(fit, type = "response", newdata = tibble(income))
+  )
+
+v %>% 
+  ggplot(aes(income)) +
+  geom_line(aes(y = .pred)) +
+  geom_count(aes(y = rvote), data = nes) +
+  scale_x_continuous(minor_breaks = NULL) +
+  theme(legend.position = "bottom") +
+  labs(
+    title = 
+      "Probability of voting for Republican in 1992 presidential election",
+    x = "Income level (1 lowest - 5 highest)",
+    y = "Probability of voting for Rebublican",
+    size = "Number of voters in survey"
+  )
+```
+
+## Comparison to actual fraction {-}
+
+
+```{r}
+nes_counts <- nes %>% 
+  group_by(income) %>%
+  summarise(rvote_count = sum(rvote), n=n())  %>%
+  mutate(frac_r = rvote_count/n, 
+        frac_r_err = sqrt(frac_r*(1-frac_r)/n) )
+```
+
+
+
+```{r, fig.asp=0.75, echo = FALSE}
+new <- tibble(income = seq(1,5))
+linpred <- posterior_linpred(fit, newdata = new)
+v <- 
+  new %>% 
+  mutate(
+    .pred = predict(fit, type = "response", newdata = new),
+    `5%`  = apply(linpred, 2, quantile, probs = 0.05) %>% plogis(),
+    `25%` = apply(linpred, 2, quantile, probs = 0.25) %>% plogis(),
+    `75%` = apply(linpred, 2, quantile, probs = 0.75) %>% plogis(),
+    `95%` = apply(linpred, 2, quantile, probs = 0.95) %>% plogis()
+  )
+
+v %>% 
+  ggplot(aes(income)) +
+  geom_ribbon(aes(ymin = `5%`, ymax = `95%`), alpha = 0.25) +
+  geom_ribbon(aes(ymin = `25%`, ymax = `75%`), alpha = 0.5) +
+  geom_line(aes(y = .pred)) +
+  geom_point(aes(y = frac_r), data = nes_counts, color = 'blue') +
+  geom_errorbar(aes(ymin = frac_r-frac_r_err,
+                    ymax = frac_r + frac_r_err),
+                    data = nes_counts, color = 'blue') +
+  scale_x_continuous(minor_breaks = NULL) +
+  theme(legend.position = "bottom") +
+  labs(
+    title = 
+      "Probability of voting for Republican in 1992 presidential election",
+    subtitle = "With 50% and 90% predictive intervals",
+    x = "Income level (1 lowest - 5 highest)",
+    y = "Probability of voting for Rebublican",
+    size = "Number of voters in survey"
+  )
+```
+
+## Intepreting regression coefficients
+
+* Nonlinearity of logistic function -> impact depends on where you evaluate the function. The averages of the predictors is a useful start.
+
+* The intercept 
+
+## Predictions and Comparisons
+
+## Latent-data formulation
+
+* Alternate formulation using a continuous 'latent' variable $z_i
+
+* 'latent' means unobserved
 
 ## Meeting Videos
 
