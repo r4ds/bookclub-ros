@@ -187,8 +187,61 @@ posterior_interval(fit_1)['income',]/4
 
 ## Predictions and Comparisons
 
+* `predict` - produces a single value (the average)
+
+```{r}
+new <- data.frame(income = 5)
+predict(fit_1, type = "response", newdata = new)
+```
+
+`response` here puts the result on the probability scale.
 
 
+Note: this is the nearly same as the point estimate:
+
+```{r}
+invlogit(coef(fit_1)[1] + coef(fit_1)[2]*5)
+```
+
+* `posterior_linpred` - samples of linear prediction in the logit scale
+
+```{r}
+linpred <- posterior_linpred(fit_1, newdata = new)
+length(linpred)
+```
+
+ 
+
+* `posterior_epred` - samples ofprediction on the probability scale (just invlogit linpred)
+
+```{r}
+epred <- posterior_epred(fit_1, newdata = new)
+length(epred)
+```
+
+As usual, the advantage of Bayesian is we can get the mean *and* standard deviation of the predicted probability:
+
+```{r}
+print(c(mean(epred), sd(epred)))
+```
+
+*  `posterior_predict` - generate random predictions using the posterior probability .
+
+
+
+```{r}
+ppred <- posterior_predict(fit_1, newdata = new)
+length(ppred)
+```
+```{r}
+
+ppred[0:10]
+```
+
+
+```{r}
+mean(ppred)
+```
 ## Latent-data formulation
 
 * Alternate formulation using a continuous 'latent' variable $z_i
