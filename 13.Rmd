@@ -400,7 +400,8 @@ nes92 <-
   as_tibble() %>%
   filter(year == 1992) %>%
   filter(xor(dvote, rvote)) %>%
-  select(rvote, age, female, black, educ1, educ2, educ3, income)
+  select(rvote, age, female, black, educ1, educ2, educ3, income)  %>%
+  mutate(female = as.factor(female), black = as.factor(black))
 ```
 
 ```{r}
@@ -475,9 +476,39 @@ loo_compare(loo_all,  loo_2, loo_3, loo_4)
 ```
 From this, the simplest fit with the interaction is best, but it is not strongly significant. 
 
-c) Looking at fit_3, what are the important variables? Disucss during meeting.
+c) Looking at fit_3, what are the important variables? Discuss during meeting.
 
 
+QUESTION: How can I set up this test data tibble in a less labor intensive way?
+
+```{r}
+test_data = tibble(income = rep(seq(1:5),4), female =c(rep(1,10), rep(0,10)), black = rep(c(rep(0,5), rep(1,5)),2))
+test_data$female = as.factor(test_data$female)
+test_data$black = as.factor(test_data$black)
+```
+
+```{r}
+
+test_data$rvote_pred = predict(fit_3, newdata = test_data, type="response")
+
+test_data %>% filter(black == 0) %>%
+ggplot()+ geom_line(aes(x=income, y=rvote_pred, color = female)) + 
+     geom_jitter(aes(x=income, y=rvote, color=female), width = .2, height = .1, data=nes92)
+```
+```{r}
+
+test_data %>% filter(female == 0) %>%
+ggplot()+ geom_line(aes(x=income, y=rvote_pred, color = black)) + 
+     geom_jitter(aes(x=income, y=rvote, color=black), width = .2, height = .1, data=nes92)
+```
+
+
+```{r}
+
+test_data %>% filter(female == 1) %>%
+ggplot()+ geom_line(aes(x=income, y=rvote_pred, color = black)) + 
+     geom_jitter(aes(x=income, y=rvote, color=black), width = .2, height = .1, data=nes92)
+```
 
 ## Meeting Videos
 
