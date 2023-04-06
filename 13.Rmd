@@ -36,7 +36,7 @@ This maps the real line to probabilities.
 In `R` we can use the logistic distribution:
 ```{r}
 logit <- qlogis
-inlogit <- plogis
+invlogit <- plogis
 ```
 
 This mapping allows us to expand our linear regression into models with two outcomes $y_i \in \{0,1\}$
@@ -73,7 +73,7 @@ set.seed(660)
 fit_1 <-
   stan_glm(
     rvote ~ income,
-    family = binomial(link = "logit"),  # this make sit logistic
+    family = binomial(link = "logit"),  # this make it logistic
     data = nes,
     refresh = 0  # Supress rows of updates
   )
@@ -163,7 +163,7 @@ Intercept is not interesting at '0' income, so evaluate at mean:
 invlogit(coef(fit_1)[1] + coef(fit_1)[2]*mean(nes$income) )
 ```
 
-* A difference of income = 0.33 on the logit scale. As an example we can find the difference in probability near the mean income (about 3): 
+* The coefficient for income is 0.33, so  aA difference of income = 0.33 on the logit scale. To understand this on the probability scale,  as an example, we can find the difference in probability near the mean income (about 3): 
 
 ```{r}
 invlogit(coef(fit_1)[1] + coef(fit_1)[2]*3 ) -
@@ -247,9 +247,10 @@ mean(ppred)
 
 ## Latent-data formulation
 
-* Alternate formulation using a continuous 'latent' variable $z_i. It is completely equivalent to the logistic regression.
+* Alternate formulation using a continuous 'latent' variable $z_i$. It is completely equivalent to the logistic regression.
 
 * 'latent' means unobserved
+
 
 $$
 \begin{align}
@@ -261,6 +262,7 @@ y_i &= \begin{cases}
 z_i &= X_i\beta + \epsilon_i 
 \end{align}
 $$
+
 
 Here the $\epsilon_i$ are independent and have the *logistic* distribution:
 
