@@ -18,4 +18,6 @@ Imports:
     rmarkdown,
     rstanarm,
     tidyr,
-    dplyr
+    dplyr,
+    here, 
+    arm

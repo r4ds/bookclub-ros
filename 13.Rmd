@@ -1,13 +1,516 @@
 # Logistic regression
 
+```{r, echo=FALSE, message = FALSE}
+library(dplyr)
+library(rstanarm)
+library(readr)
+library(ggplot2)
+library(bayesplot)
+```
+
 **Learning objectives:**
 
-- THESE ARE NICE TO HAVE BUT NOT ABSOLUTELY NECESSARY
+- Introduce logistic regression
 
-## SLIDE 1
+- Learn to interpret coefficients
 
-- ADD SLIDES AS SECTIONS (`##`).
-- TRY TO KEEP THEM RELATIVELY SLIDE-LIKE; THESE ARE NOTES, NOT THE BOOK ITSELF.
+- Learn about latent-data formulation
+
+## Logistic regression with a single predictor
+
+Logistic function maps $(0,1)$ to $(-\infty, \infty)$:
+
+$$
+\text{logit}(x) = log\left(\frac{x}{1-x}\right)
+$$
+
+Also known as 'log odds', this can be used to map probabilities to the whole real line.
+
+The inverse is $\text{logit}^{-1}$ or 'sigmoid' function:
+
+$$
+\text{logit}^{-1}  = \frac{e^x}{1 + e^x}
+$$
+This maps the real line to probabilities.
+
+In `R` we can use the logistic distribution:
+```{r}
+logit <- qlogis
+invlogit <- plogis
+```
+
+This mapping allows us to expand our linear regression into models with two outcomes $y_i \in \{0,1\}$
+
+$$
+Pr(y_i = 1) = \text{logit}^{-1}(X_i\beta)
+$$
+
+* Note that all the uncertainty comes for the probabilistic prediction of the binary outcome.
+
+## Example {-}
+
+* This example uses national election data, which has a lot of columns of data for every election from 1952 to 2000. For this example we are only concerned with the 1992 election and the impact of income on preference between Bush (y=1) and Bill Clinton. 
+
+* The code below is modified from the `tidyros` repo.
+
+```{r}
+file_nes <- here::here("data/nes.txt")
+nes <-
+  file_nes %>% 
+  read.table() %>% 
+  as_tibble() %>%
+  select(year, income, dvote, rvote) %>%
+  filter(xor(dvote, rvote))  %>%  # only those with pref
+  filter(year == 1992)
+
+nes |> count(dvote, rvote)
+```
+Logistic regression :
+
+```{r}
+set.seed(660)
+
+fit_1 <-
+  stan_glm(
+    rvote ~ income,
+    family = binomial(link = "logit"),  # this make it logistic
+    data = nes,
+    refresh = 0  # Supress rows of updates
+  )
+
+fit_1
+```
+Lets plot it;
+
+```{r, fig.asp=0.75, echo=FALSE}
+v <- 
+  tibble(
+    income = seq(-1,7),
+    .pred = predict(fit_1, type = "response", newdata = tibble(income))
+  )
+
+v %>% 
+  ggplot(aes(income)) +
+  geom_line(aes(y = .pred)) +
+  geom_count(aes(y = rvote), data = nes) +
+  scale_x_continuous(minor_breaks = NULL) +
+  theme(legend.position = "bottom") +
+  labs(
+    title = 
+      "Probability of voting for Republican in 1992 presidential election",
+    x = "Income level (1 lowest - 5 highest)",
+    y = "Probability of voting for Rebublican",
+    size = "Number of voters in survey"
+  )
+```
+
+## Comparison to actual fraction {-}
+
+
+```{r}
+nes_counts <- nes %>% 
+  group_by(income) %>%
+  summarise(rvote_count = sum(rvote), n=n())  %>%
+  mutate(frac_r = rvote_count/n, 
+        frac_r_err = sqrt(frac_r*(1-frac_r)/n) )
+```
+
+
+
+```{r, fig.asp=0.75, echo = FALSE}
+new <- tibble(income = seq(1,5))
+linpred <- posterior_linpred(fit_1, newdata = new)
+v <- 
+  new %>% 
+  mutate(
+    .pred = predict(fit_1, type = "response", newdata = new),
+    `5%`  = apply(linpred, 2, quantile, probs = 0.05) %>% plogis(),
+    `25%` = apply(linpred, 2, quantile, probs = 0.25) %>% plogis(),
+    `75%` = apply(linpred, 2, quantile, probs = 0.75) %>% plogis(),
+    `95%` = apply(linpred, 2, quantile, probs = 0.95) %>% plogis()
+  )
+
+v %>% 
+  ggplot(aes(income)) +
+  geom_ribbon(aes(ymin = `5%`, ymax = `95%`), alpha = 0.25) +
+  geom_ribbon(aes(ymin = `25%`, ymax = `75%`), alpha = 0.5) +
+  geom_line(aes(y = .pred)) +
+  geom_point(aes(y = frac_r), data = nes_counts, color = 'blue') +
+  geom_errorbar(aes(ymin = frac_r-frac_r_err,
+                    ymax = frac_r + frac_r_err),
+                    data = nes_counts, color = 'blue') +
+  scale_x_continuous(minor_breaks = NULL) +
+  theme(legend.position = "bottom") +
+  labs(
+    title = 
+      "Probability of voting for Republican in 1992 presidential election",
+    subtitle = "With 50% and 90% predictive intervals",
+    x = "Income level (1 lowest - 5 highest)",
+    y = "Probability of voting for Rebublican",
+    size = "Number of voters in survey"
+  )
+```
+
+## Intepreting regression coefficients
+
+* Nonlinearity of logistic function -> impact depends on where you evaluate the function. 
+
+* The averages of the predictors is a useful start.
+
+Intercept is not interesting at '0' income, so evaluate at mean:
+
+```{r}
+invlogit(coef(fit_1)[1] + coef(fit_1)[2]*mean(nes$income) )
+```
+
+* The coefficient for income is 0.33, so  aA difference of income = 0.33 on the logit scale. To understand this on the probability scale,  as an example, we can find the difference in probability near the mean income (about 3): 
+
+```{r}
+invlogit(coef(fit_1)[1] + coef(fit_1)[2]*3 ) -
+   invlogit(coef(fit_1)[1] + coef(fit_1)[2]*2 )
+```
+So near the average income, a change in 1 income class gives about 0.07 increase in probability of voting for bush
+
+* Divide-by-4: The steapest slope (upper bound on effect on probability) occurs for p=0.5, and is equal to $\beta/4$ . The can be used as a rule of convenience.  For our case, the probabilities are near 0.5, and rule of 4 gives:
+
+```{r}
+coef(fit_1)[2]/4
+```
+So the upper bound on the effect of increasing income category here is 0.08
+
+What about confidence interval in that:
+
+```{r}
+posterior_interval(fit_1)['income',]/4
+```
+
+
+## Predictions and Comparisons
+
+* `predict` - produces a single value (the average)
+
+```{r}
+new <- data.frame(income = 5)
+predict(fit_1, type = "response", newdata = new)
+```
+
+`response` here puts the result on the probability scale.
+
+
+Note: this is the nearly same as the point estimate:
+
+```{r}
+invlogit(coef(fit_1)[1] + coef(fit_1)[2]*5)
+```
+
+* `posterior_linpred` - samples of linear prediction in the logit scale
+
+```{r}
+linpred <- posterior_linpred(fit_1, newdata = new)
+length(linpred)
+```
+
+ 
+
+* `posterior_epred` - samples ofprediction on the probability scale (just invlogit linpred)
+
+```{r}
+epred <- posterior_epred(fit_1, newdata = new)
+length(epred)
+```
+
+As usual, the advantage of Bayesian is we can get the mean *and* standard deviation of the predicted probability:
+
+```{r}
+print(c(mean(epred), sd(epred)))
+```
+
+Note that `mean(epred)` is exactly what `predict` returned (with type = 'response')
+
+*  `posterior_predict` - generate random predictions using the posterior probability .
+
+
+
+```{r}
+ppred <- posterior_predict(fit_1, newdata = new)
+length(ppred)
+```
+```{r}
+
+ppred[0:10]
+```
+
+
+```{r}
+mean(ppred)
+```
+
+## Latent-data formulation
+
+* Alternate formulation using a continuous 'latent' variable $z_i$. It is completely equivalent to the logistic regression.
+
+* 'latent' means unobserved
+
+
+$$
+\begin{align}
+y_i &= \begin{cases}
+                1 & \text{if } z_i > 0 \\
+                0 &\text{if } z_i < 0 \\
+      \end{cases} \\
+
+z_i &= X_i\beta + \epsilon_i 
+\end{align}
+$$
+
+
+Here the $\epsilon_i$ are independent and have the *logistic* distribution:
+
+```{r, echo = FALSE}
+logiplot <- tibble(
+  x = seq(-60,60)/10,
+  p = dlogis(x))
+logiplot |> ggplot(aes(x=x, y=p)) +
+  geom_line()
+```
+
+
+
+* The distribution of the error terms is similar to a Gaussian with $\sigma = 1.6$. What we relaxed that and use a Gaussian fit $\sigma$ ?
+
+* Answer: It wont work because the 'latent' scale parameter $\sigma$ is non-identifiable. You can pick any $\sigma you want and you can get the same predictions by scaling the slope and intercept!
+
+* So why bother?
+
+   * In some settings direct information is available for the $z_i$'s 
+    
+   * We will see in later chapters this latent formulation can be useful.
+   
+## Maximum likelihood and Bayesian inference
+
+* Likelihood:
+
+$$
+p(y\mid\beta,X) = \prod_{i=1}^n(\text{logit}^{-1}(X_i\beta))^{y_i}(1-\text{logit}^{-1}(X_i\beta))^{1-y_i}
+$$
+* The $\beta$ that maximizes this is the can be found by iterative techniques (implemented by `glm` for example)
+
+* Bayesian inference with uniform prior
+
+   * with `prior=NULL, prior_intercept=NULL` this is same as maximum likelihood
+
+   * Benefit is  you get simulations of full posterior (not just maximum)! 
+   
+   * But don't do this, use priors! (At minimum provides some regularization)
+   
+* `stan_glm` by default uses weakly informative priors
+
+* If prior information is available, use it!
+
+## Example comparing maximum likelihood and Bayesian inference {-}
+
+* Simulation study, $p = \text{logit}^{-1}(a + b x)$. 
+
+* Assume that we expect b to fall approximately between 0 and 1 and impose a prior with mean 0.5 and standard devation 0.5. Stick with default prior on intercept
+
+* This example is adapted from the `tidyros` repo!
+https://github.com/behrman/ros
+
+```{r}
+bayes_sim <- function(n, a = -2, b = 0.8) {
+  data <- 
+    tibble(
+      x = runif(n, min = -1, max = 1),
+      y = if_else(0 < rlogis(n, location = a + b * x, scale = 1), 1, 0)
+    )
+  
+  fit_glm <- glm(y ~ x, family = binomial(link = "logit"), data = data)
+  fit_stan <- 
+    stan_glm(
+      y ~ x,
+      family = binomial(link = "logit"),
+      data = data,
+      refresh = 0,
+      prior = normal(location = 0.5, scale = 0.5)
+    )
+  
+  arm::display(fit_glm, digits = 1)
+  cat("\n")
+  print(fit_stan, digits = 1)
+}
+```
+
+We next simulate for a range of sample sizes, each time focusing on inference about b, for which a value of 0.8 was used to generate the data.
+
+#### n = 10{-}
+
+```{r}
+set.seed(363852)
+
+bayes_sim(10)
+```
+
+* Focus on the coefficient of x, which represents the parameter of interest in this hypothetical study.
+
+* `glm()` gives a maximum likelihood estimate of 1.5 with large error, indicating little info in 10 data points
+
+* `stan_glm()` estimate is influenced by the prior. 0.6 is close to the prior mean of 0.5, being pulled away by the data only slightly.
+
+#### n = 100 {-}
+
+```{r}
+bayes_sim(100)
+```
+
+* The maximum likelihood estimate is again extreme, but less so.
+
+*  Bayes estimate is again pulled toward the prior mean of 0.5, but less so than before.
+
+#### n = 1000 {-}
+
+```{r}
+bayes_sim(1000)
+```
+
+* At n=1000, the prior no longer has much if any impact.
+
+
+## Cross validation and log score for logistic regression
+
+* As in Section 11.8, we can use `loo` crossvalidation to compare models.  In this case the log score is:
+
+$$
+\text{log score} = \sum_{i=1}^{n^{\text{new}}}y_i\log{p_i^{\text{new}}}+(1-y_i)\log{(1-p_i^{\text{new}})}
+$$
+
+* For calibration purposes: If you have no info and simply assign p=0.5 for every outcome, the log score is $-0.693n^{\text{new}}$.
+
+
+* Examples using `loo` will be given in the next session
+
+## Building a logisic regression model
+
+* Instead of going through the well example, lets look at exercise 13.1.  This uses the NES data but looking at more variables. There are 70 total in the data set. i picked out some of them. Note that there was also a 'race' categorical but I could not find figure out the categories. (A preliminary model not shown here indicates that race =2 is the only strong predictor)
+
+part a+ b:
+
+```{r}
+file_nes <- here::here("data/nes.txt")
+nes92 <-
+  file_nes %>% 
+  read.table() %>% 
+  as_tibble() %>%
+  filter(year == 1992) %>%
+  filter(xor(dvote, rvote)) %>%
+  select(rvote, age, female, black, educ1, educ2, educ3, income)  %>%
+  mutate(female = as.factor(female), black = as.factor(black))
+```
+
+```{r}
+pairs(~ educ1 + educ2 + educ3, data = nes92)
+
+```
+
+educ1 seems to be on a different scale. I am just going to combine 2 and 3 and call it good for this exercise.
+
+```{r}
+nes92 <- nes92 |> mutate(educ = (educ2 + educ3)/2)
+```
+
+ 
+I will treat education as continuous just as was done for income.
+
+I included some interactions that apriori seem important
+
+```{r}
+fit_all <- stan_glm(rvote ~ educ + black + income + female + age + age:black + income:black + female:income, data = nes92, family=binomial(link= 'logit'), refresh = 0)
+print(fit_all, digits = 3)
+```
+
+
+Lets look at loo. The baseline loo is
+
+```{r}
+-0.693*nrow(nes92)
+```
+
+
+```{r}
+loo_all <- loo(fit_all)
+loo_all
+```
+
+Simplify a bit by droping the poorest predictors
+
+
+```{r}
+fit_2 <- stan_glm(rvote ~ educ + black + income + age + female + female:income, data = nes92, family=binomial(link= 'logit'), refresh = 0)
+print(fit_2, digits = 3)
+```
+
+```{r}
+loo_2 <- loo(fit_2)
+loo_2
+```
+
+Ok and lets try even simpler:
+
+```{r}
+fit_3 <- stan_glm(rvote ~ black + income + female + female:income, data = nes92, family=binomial(link= 'logit'), refresh = 0)
+print(fit_3, digits = 3)
+```
+```{r}
+loo_3 <- loo(fit_3)
+loo_3
+```
+
+Finally, leave out the last interaction:
+
+```{r}
+fit_4 <- stan_glm(rvote ~ black + income + female, data = nes92, family=binomial(link= 'logit'), refresh = 0)
+print(fit_4, digits = 3)
+loo_4 <- loo(fit_4)
+```
+
+
+```{r}
+loo_compare(loo_all,  loo_2, loo_3, loo_4)
+```
+From this, the simplest fit with the interaction is best, but it is not strongly significant. 
+
+c) Looking at fit_3, what are the important variables? Discuss during meeting.
+
+
+QUESTION: How can I set up this test data tibble in a less labor intensive way?
+
+```{r}
+test_data = tibble(income = rep(seq(1:5),4), female =c(rep(1,10), rep(0,10)), black = rep(c(rep(0,5), rep(1,5)),2))
+test_data$female = as.factor(test_data$female)
+test_data$black = as.factor(test_data$black)
+```
+
+```{r}
+
+test_data$rvote_pred = predict(fit_3, newdata = test_data, type="response")
+
+test_data %>% filter(black == 0) %>%
+ggplot()+ geom_line(aes(x=income, y=rvote_pred, color = female)) + 
+     geom_jitter(aes(x=income, y=rvote, color=female), width = .2, height = .1, data=nes92)
+```
+```{r}
+
+test_data %>% filter(female == 0) %>%
+ggplot()+ geom_line(aes(x=income, y=rvote_pred, color = black)) + 
+     geom_jitter(aes(x=income, y=rvote, color=black), width = .2, height = .1, data=nes92)
+```
+
+
+```{r}
+
+test_data %>% filter(female == 1) %>%
+ggplot()+ geom_line(aes(x=income, y=rvote_pred, color = black)) + 
+     geom_jitter(aes(x=income, y=rvote, color=black), width = .2, height = .1, data=nes92)
+```
 
 ## Meeting Videos
 
