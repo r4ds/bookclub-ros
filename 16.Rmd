@@ -2,12 +2,116 @@
 
 **Learning objectives:**
 
-- THESE ARE NICE TO HAVE BUT NOT ABSOLUTELY NECESSARY
+- Understand statistical power  
+- Understand the goals of study design
+- Learn to use fake data to understand potential study results
 
-## SLIDE 1
+## Statistical Power
 
-- ADD SLIDES AS SECTIONS (`##`).
-- TRY TO KEEP THEM RELATIVELY SLIDE-LIKE; THESE ARE NOTES, NOT THE BOOK ITSELF.
+- Statistical power is the probability that a particular comparison will achieve "statistical significance" at some predetermined level before a study is performed.
+
+- A power analysis is performed by hypothesizing an effect size, making assumptions about the variation in the data and the sample size of the study to be conducted, and using probability calculations to determine the chance of the p-value being below the threshold.
+
+- Low-power but inexpensive studies seem tempting, but if they succeed they are likely to have Type-M or even Type-S errors. *Winners Curse*
+
+- To estimate effect size, consider a range of values, or decide what magnitude of effect would be practically interesting. 
+
+## General Principles of design (proportions)
+
+- Sample size to achieve a specified standard error:
+
+  - Standard error: $\sqrt{p(1-p)/n} \approx 0.5/\sqrt{n}$
+  - So $n \approx (0.5/\text{s.e.})^2$
+
+
+`r knitr::include_graphics("images/fig16p3.png")`
+
+- Sample size to achieve specified probability (power) of statistical significance:
+
+  - For 80% probabilty of 95% statistical significance, the true effect must  be 2.8 standard errors from zero
+  - $n = p(1-p)(2.8/(p-p_0))^2$
+
+
+- For comparisons of proportions, you need approximately 4 times the samples. 
+
+## Sample size and design for continuous outcomes
+
+- For 80% probability of 95% confidence, same principles apply: 2.8 standard errors
+
+- For very small samples, use t-distribution. 
+
+- The standard error for comparison of means is $\sqrt{\sigma_1^2/n_1 + \sigma_2^2/n_2}$. 
+
+If the groups are equal and the standard errors are expected to be equal, then $\text{s.e.} = 2\sigma/\sqrt{n}$.   If the goal is 80% power, then the effect must be 2.8 times this standard error. For example, if the effect is expected to 0.5 standard deviations, we require $0.5\sigma/\text{se} = 2.8$ : 
+
+$$
+0.5 \sqrt{n}/2 = 2.8\\
+n=(2.8*4)^2 = 125.4
+$$
+
+## Regression predictors {-}
+
+* Adding predictors should decrease residual standard deviation and thus reduce required sample size (see example in 16.6)
+
+* In general, standard errors of coefficients are proportional to $1/\sqrt{n}$, so reducing error by half requires 4 times the samples.
+
+* Samples size is *never* large enough! Your inferential needs will increase with your sample size.
+
+
+## Interactions 
+
+- You need 4 times the sample size to estimate an interaction that is the same size as the main effect.
+
+- Implies a big problem: If you don't find the anticipated main effect and then look to  the interactions to bail you out, you are likely looking at Type  M / Type S errors!
+
+- More commonly, you arrange code variables so that the larger comparisons appear as main effects. So we expect interactions to be smaller.  If they are half the size of the main effect, you would need 16 times the samples!
+
+- The message is to accept that you cannot attain solid estimates of the interactions and accept the uncertainty.
+
+## Example in R {-}
+
+See example "SampleSize" in [Tidy Ros](https://github.com/behrman/ros)
+
+
+## Design calculations after the data have been collected
+
+* Return to the Beauty and sex ration example (from 9.4-9.5).  
+
+* Study claimed that very attractive parents were 8% +- 3% more likely to have girls. 
+
+* Should we give this much credence?
+
+   * Unusual things do happen, so this could be one of those 5% cases.  Also the researchers had degrees of freedom to manipulate... 
+
+   * Previous studies suggest any such effect is probably (much) less then 0.5%. This study would only be able to detect an effect that was 12 times this! This suggests a type M error (or even type S). 
+   
+
+* Lessons learned?
+   
+   * It is well known that with large samples, even a small estimate can be statistically significant (but not practically significant)
+
+   * It should be also remember that only large effects will be significant with small samples. So any significant effect is likely to also strong! So with small samples, you must be wary, or at least except that you have only weak evidence of an effect that are suggestive and not definitive.
+   
+   
+## Design analysis using fake-data simulation
+
+* Most general and often clearest method to understand a future study: Simulate it!
+
+* Example using a randomized experiment on 100 students designed to test an intervention for improving scores.
+
+   - Assumes intervention effect is a 5 point addition to teh students score. 
+   - Final exam score are assumed ot be random with mean 60 and standard deviation 20
+   
+See example "FakeMidTermFinal" in [Tidy Ros](https://github.com/behrman/ros)
+
+* Demonstrates effectiveness of using a pre-treatment predictor:
+
+  * Reduce error on effect estimate
+  * Control for selection bias
+  
+
+
+   
 
 ## Meeting Videos
 
