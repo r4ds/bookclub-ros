@@ -75,7 +75,7 @@ See example "SampleSize" in [Tidy Ros](https://github.com/behrman/ros)
 
 ## Design calculations after the data have been collected
 
-* Return to the Beauty and sex ration example (from 9.4-9.5).  
+* Return to the Beauty and sex ratio example (from 9.4-9.5).  
 
 * Study claimed that very attractive parents were 8% +- 3% more likely to have girls. 
 
@@ -99,8 +99,8 @@ See example "SampleSize" in [Tidy Ros](https://github.com/behrman/ros)
 
 * Example using a randomized experiment on 100 students designed to test an intervention for improving scores.
 
-   - Assumes intervention effect is a 5 point addition to teh students score. 
-   - Final exam score are assumed ot be random with mean 60 and standard deviation 20
+   - Assumes intervention effect is a 5 point addition to the students score. 
+   - Final exam score are assumed to be random with mean 60 and standard deviation 20
    
 See example "FakeMidTermFinal" in [Tidy Ros](https://github.com/behrman/ros)
 
