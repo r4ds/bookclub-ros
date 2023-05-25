@@ -1,13 +1,277 @@
 # Causal inference basics and randomized experiments
 
-**Learning objectives:**
 
-- THESE ARE NICE TO HAVE BUT NOT ABSOLUTELY NECESSARY
+```{r, echo=FALSE, message = FALSE}
+library(dplyr)
+library(rstanarm)
+```
+**Learning objective:**
 
-## SLIDE 1
+"Introduce the notation and ideas of causal inference in the context of randomized experiments"
 
-- ADD SLIDES AS SECTIONS (`##`).
-- TRY TO KEEP THEM RELATIVELY SLIDE-LIKE; THESE ARE NOTES, NOT THE BOOK ITSELF.
+## Basics of causal inference
+
+* Running example: Omega 3 supplements effect on blood pressure($y$).
+
+```{r}
+hypo_data <- tribble(
+    ~Unit, ~Female, ~Age, ~y0, ~y1,
+    "Audrey", 1, 40, 140, 135,
+    "Anna",   1, 40, 140, 135,
+    "Bob" ,   0, 50, 150, 140,
+    "Bill",   0, 50, 150, 140,
+    "Caitlin", 1, 60, 160, 155,
+    "Cara",    1, 60, 160, 155,
+    "Dave",    0, 70, 170, 160,
+    "Doug",    0, 70, 170, 160,
+    
+)
+```
+
+
+* Causal effect: comparison between different potential outcomes ($y^0$ if you didn't get treatment, $y^1$ if you did) of what what *might* have occurred under different scenarios.
+
+* Fundamental problem: You cant observe these two outcomes! You only get one. (unlike in our hypothetical example)
+
+* Close substitutes: 
+
+   - Pre-post (use pre-study variable). Issue: Things change.
+   - Crossover trials - randomize the order of receipt of treatments. (Book does not go into details).
+   
+## Average Causal Effects
+
+* Hypothetical individual treatment effect $\tau_i = y_i^1 - y_i^0$
+ 
+* We can use this to define:
+
+   * Sample Average Treatment Effect (SATE)  - $\tau_{\text{SATE}}=\frac{1}{n}\sum_i(y_i^1-y_i^0)$. 
+      * If control and treatment are balanced then this can be simply estimated from the average effect.
+      
+   
+   * Conditional Average Treatment Effect (CATE) - average effect for some well defined subset.
+   
+   * Population average treatment effect (PATE) - average over some population of interest.
+      * Requires knowing potential outcomes for observations not in our sample!
+      * If our sample is a random sample, then any unbiased estimate of SATE will br an unbiased estimate of PATE. 
+      * without random sample, we can use poststratification.
+      
+   * How do we estimate average treatment effect with (typically) unbalanced treatment and control groups? 
+      * Randomization to balance in expectation
+      * Blocking to reduce the variation in imbalances
+      * At analysis stage, adjusting difference for pre-treatment variables  
+  
+For our running example, the theoretical SATE is:
+```{r}
+hypo_data |> summarize(SATE = mean(y1-y0))
+```
+And conditional on sex, it is -10 for men, -5 for females.
+
+```{r}
+hypo_data |> group_by(Female) |>
+  summarize(SATE = mean(y1-y0))
+```
+
+*But we dont have both outcomes to really measure this.*
+
+## Randomized experiments
+
+* Unbiased estimator -> mean is equal to the estimand 
+* Efficient estimator -> small  variance in the estimation of the estimand.
+
+
+* Completely randomized experiment.  
+    * Treatment is independent of potential outcome -> unbiased estimator 
+    * High variance with small samples.
+
+* Randomized Block experiment
+    * Increase efficiency by assigning subject to different blocks with common characteristics.
+    * Calculate separate treatment effects for each block, and then combine in a weighted average (for the sample or population as required)
+    * Alternative: use a regression with indicators for each block. Example in section 19.2-19.4
+    
+    
+## Complete Randomization example {-}
+
+In our running example, let's see what happens if we choose completely at random.  
+
+```{r}
+gen_random_exp <- function(){
+  res <- hypo_data |> mutate(
+    
+     # assign treatment
+     z = sample(c(rep(0, 4), rep(1, 4)),8),
+     y = if_else(z==1, y1, y0)
+     )
+  res
+}
+
+n <- 100
+avg_eff <- rep(0,n)
+for(i in 1:n){
+  exp <- gen_random_exp() |> group_by(z) |> summarise(res = mean(y))
+  avg_eff[i] <- (exp |> filter(z==1))$res -(exp |> filter(z==0))$res
+}
+
+c(mean(avg_eff), sd(avg_eff))
+  
+```
+On average the answer is equal to the SATE, but it is quite noisy!
+    
+## Other randomizations
+    
+* Matched pairs: Special case of randomized blocks where there are just 2 in each block, randomly one of the pair receives the treatment. 
+
+* Group / Cluster randomized experiments
+   * Assign treatments at group level.
+   * Sometimes a design decision to avoid interference effects  (Violation of SUTVA)
+   * Can analyze at group level (aggregated measures) or use multilevel regression (Book 2, in progress? "Applied Regression and Multilevel Models")
+  
+## Properties of randomized experiments
+
+* Ignorability
+
+   * Completely randomized: $z \perp y^0,y^1$ implies that there will be no differences on average in potential outcomes between treatment and control group.
+   
+   * Randomized Block Experiments:  $z \perp y^0,y^1 | w$ no difference within blocks between treatment and control groups (on average) 
+   
+   * Matched pair: No difference between potential outcomes of the two members of the pair.
+   
+   * Will revisit more general version of ignorability in Chapter 20.
+   
+* Efficiency
+
+   * Ideally blocks create subgroups where the members are more similar to each other in the blocks
+   * This should enable sharper estimates of block specific effects, which can be combined in a weighted average. (Same effects can be achieved with regression on block indicators)
+   * Regression also increases efficiency by adjusting for pre-treatment variables. "It is as if nature created a randomized block experiment and we were taking advantage of it."
+
+> Question: Isn't there some colinearity problem if you include block indicators and pre-treatment variables, many of which were used to define the blocks? 
+
+## Returning to the example {-}
+
+First lets try to use the last idea, adjusting for pre-treatment variables.
+
+```{r}
+exp <- gen_random_exp()
+stan_glm(y ~ z + Female + Age, data = exp, refresh = 0)
+```
+
+Better then our completely randomized! 
+ 
+We can also compute the error on the effect by through simulation, using lm to avoid degenerate cases and speed it up. 
+
+```{r}
+set.seed(42)
+n <- 30
+avg_eff <- rep(0,n)
+for(i in 1:n){
+  #print(n)
+  exp <- gen_random_exp()  
+  fit <- lm(y ~ z + Female + Age, data = exp)
+  avg_eff[i] <- coef(fit)[2]
+}
+
+c(mean(avg_eff), sd(avg_eff))
+```
+
+### Block Randomization
+One way to consider the block thing is to consider only age: The 4 oldest in one block the for youngest in the other.
+
+```{r}
+gen_random_block_exp <- function(){
+  res <- hypo_data |> 
+    mutate(
+       block = if_else(Age > 55, 1, 0 ) ) |>
+    group_by(block) |>
+    mutate(
+     z = sample(c(rep(0, 2), rep(1, 2)),4)
+    ) |> ungroup() |> 
+    mutate(
+     y = if_else(z==1, y1, y0)
+     )
+  res
+}
+
+  
+n <- 100
+avg_eff <- rep(0,n)
+for(i in 1:n){
+  exp <- gen_random_block_exp() |> group_by(z) |> summarise(res = mean(y))
+  avg_eff[i] <- (exp |> filter(z==1))$res -(exp |> filter(z==0))$res
+}
+
+c(mean(avg_eff), sd(avg_eff))
+ 
+```
+Better then total randomization as expected.
+
+Another way to get same result. Note that `block` is not really needed since it is balanced, Same result either way.
+
+```{r}
+set.seed(33)
+n <- 30
+avg_eff <- rep(0,n)
+for(i in 1:n){
+  #print(n)
+  exp <- gen_random_block_exp()
+  fit <- lm(y ~ z, data = exp)
+  #fit <- lm(y ~ z + block, data = exp)
+  avg_eff[i] <- coef(fit)[2]
+}
+
+c(mean(avg_eff), sd(avg_eff))
+```
+ 
+
+If add Age, it works better (Age completely splits the data it into perfect pairs, but they were not perfectly sampled)
+ 
+```{r}
+set.seed(33)
+n <- 30
+avg_eff <- rep(0,n)
+for(i in 1:n){
+  #print(n)
+  exp <- gen_random_block_exp()  
+  fit <- lm(y ~ z +   Age, data = exp)
+  avg_eff[i] <- coef(fit)[2]
+}
+
+c(mean(avg_eff), sd(avg_eff))
+```
+(IF i do add 'block' to the above, the errors increase due to colinearity)
+
+```{r}
+set.seed(33)
+n <- 30
+avg_eff <- rep(0,n)
+for(i in 1:n){
+  #print(n)
+  exp <- gen_random_block_exp()  
+  fit <- lm(y ~ z + block +   Age, data = exp)
+  avg_eff[i] <- coef(fit)[2]
+}
+
+c(mean(avg_eff), sd(avg_eff))
+```
+
+## Assumptions and Limitations of randomized experiments
+
+* SUTVA -"Stable unit treatment value assumption" 
+
+   * No interference among units (spillover)
+   * No hidden versions of the treatment - all units receive same well-defined treatment
+   
+* External Validity
+    * Internal validity - design is able to recover causal effects in the sample
+    * External validity - extrapolating this to the greater population of interest.
+    * Example "threat to validity" - Interactions between participation and the researcher or the subject.
+       * Collecting a food diary effects the diet.
+       * Assessor on antidepressant medication might be biased by knowledge of who has the medication
+    * "Double Blind" studies can avoid some of this, but not always possible. 
+
+* Missing data 
+    * Missing pre-treatment variables can be ignored since they are independent of treatment assignment
+    * Missing outcomes and non-compliance are more problematic as they introduce biases.  More discussion  (and potential solutions) of this in Chapter 20 and 21.
+
+
 
 ## Meeting Videos
 
