@@ -17,16 +17,15 @@
 
 `r knitr::include_url("https://www.youtube.com/embed/wMrZoc6oOzg")`
 
-<!--
 ### Cohort 2
 
-`r knitr::include_url("https://www.youtube.com/embed/URL")`
+`r knitr::include_url("https://www.youtube.com/embed/Xi-ZZsQCFL8")`
 
 <details>
 <summary> Meeting chat log </summary>
-
 ```
-LOG
+00:47:15	Ryan Honomichl:	# Kernel Density Plot
+d <- density(mtcars$mpg) # returns the density data
+plot(d) # plots the results
 ```
 </details>
--->

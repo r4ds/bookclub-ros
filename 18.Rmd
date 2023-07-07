@@ -272,19 +272,33 @@ c(mean(avg_eff), sd(avg_eff))
     * Missing outcomes and non-compliance are more problematic as they introduce biases.  More discussion  (and potential solutions) of this in Chapter 20 and 21.
 
 
-
 ## Meeting Videos
 
-<!--
 ### Cohort 2
 
-`r knitr::include_url("https://www.youtube.com/embed/URL")`
+`r knitr::include_url("https://www.youtube.com/embed/SnY0fXTd6S4")`
 
 <details>
 <summary> Meeting chat log </summary>
-
 ```
-LOG
+00:28:17	Ron Legere:	
+gen_random_exp <- function(){
+  res <- hypo_data |> mutate(
+    
+     # assign treatment
+     z = sample(c(rep(0, 4), rep(1, 4)),8),
+     y = if_else(z==1, y1, y0)
+     )
+  res
+}
+
+n <- 100
+avg_eff <- rep(0,n)
+for(i in 1:n){
+  exp <- gen_random_exp() |> group_by(z) |> summarise(res = mean(y))
+  avg_eff[i] <- (exp |> filter(z==1))$res -(exp |> filter(z==0))$res
+}
+
+c(mean(avg_eff), sd(avg_eff))
 ```
 </details>
--->

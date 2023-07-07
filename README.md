@@ -11,7 +11,7 @@ As we read, we are producing [notes about the book](https://r4ds.io/ros).
 If you would like to present, please see the sign-up sheet for your cohort (linked below, and pinned in the [#book_club-ros](https://rfordatascience.slack.com/archives/C01V8RJ4J0M) channel on Slack)!
 
 - Cohort 1 (started 2021-05-18, ended 2021-11-30): [meeting videos](https://www.youtube.com/playlist?list=PL3x6DOfs2NGi-qV3hhy95RxEtChyX6we3)
-- [Cohort 2](https://docs.google.com/spreadsheets/d/1yyyCukV6qKx_IQhyguubGDyhWusEgWGbdaNznzXZpNg/edit?usp=sharing) (started 2022-12-01): [Thursdays, 14:00 CST/CDT](https://www.timeanddate.com/worldclock/converter.html?iso=20221201T200000&p1=24&p2=179&p3=1440) | [meeting videos](https://www.youtube.com/playlist?list=PL3x6DOfs2NGj4QAT3bvOaDICzyeN7k8tF)
+- Cohort 2 (started 2022-12-01, ended 2023-07-06): [meeting videos](https://www.youtube.com/playlist?list=PL3x6DOfs2NGj4QAT3bvOaDICzyeN7k8tF)
 
 <hr>
 

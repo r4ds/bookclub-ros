@@ -218,16 +218,15 @@ To avoid *Type M* and *Type S* errors, study large difference, gather large samp
 
 `r knitr::include_url("https://www.youtube.com/embed/gg7XfDgyf84")`
 
-<!--
 ### Cohort 2
 
-`r knitr::include_url("https://www.youtube.com/embed/URL")`
+`r knitr::include_url("https://www.youtube.com/embed/kn8fyNzvcPo")`
 
 <details>
 <summary> Meeting chat log </summary>
-
 ```
-LOG
+00:54:18	Ron:	William Sealy Gosset
+00:56:15	Ron:	Book section 7.3 talks about this
+00:56:19	Ron:	I think :)
 ```
 </details>
--->

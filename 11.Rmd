@@ -620,16 +620,17 @@ Remember that elpd is just one clue
 
 `r knitr::include_url("https://www.youtube.com/embed/JUwgp4isp5U")`
 
-<!--
 ### Cohort 2
 
-`r knitr::include_url("https://www.youtube.com/embed/URL")`
+`r knitr::include_url("https://www.youtube.com/embed/X3oExz08gms")`
+
+`r knitr::include_url("https://www.youtube.com/embed/ssVGhNStSh4")`
 
 <details>
 <summary> Meeting chat log </summary>
-
 ```
-LOG
+00:14:32	Korantema Owusu Darko: Hello
+00:17:58	Ron Legere: Reacted to "Hello" with 👍
+01:07:43	Ron Legere: 11.3, 11.6, 11.9,11.10
 ```
 </details>
--->

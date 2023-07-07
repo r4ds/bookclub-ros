@@ -17,16 +17,13 @@
 
 `r knitr::include_url("https://www.youtube.com/embed/o6aW5ogQiEQ")`
 
-<!--
 ### Cohort 2
 
-`r knitr::include_url("https://www.youtube.com/embed/URL")`
+`r knitr::include_url("https://www.youtube.com/embed/Nwp0yaY9yyk")`
 
 <details>
 <summary> Meeting chat log </summary>
-
 ```
-LOG
+00:34:04	Gabby Palomo Munoz: I gotta go, but will try to be in next week's meeting. Thanks Ryan.
 ```
 </details>
--->
