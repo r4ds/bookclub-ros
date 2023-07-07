@@ -17,16 +17,14 @@
 
 `r knitr::include_url("https://www.youtube.com/embed/utgZGyRJYAU")`
 
-<!--
 ### Cohort 2
 
-`r knitr::include_url("https://www.youtube.com/embed/URL")`
+`r knitr::include_url("https://www.youtube.com/embed/RVLG7S2vPbA")`
 
 <details>
 <summary> Meeting chat log </summary>
-
 ```
-LOG
+00:11:11	Ryan Honomichl: https://www.statology.org/variance-inflation-factor-r/
+00:27:24	Ryan Honomichl: https://strengejacke.github.io/sjPlot/articles/plot_marginal_effects.html#:~:text=plot_model()%20is%20a%20generic,(model%20coefficients)%20are%20plotted.
 ```
 </details>
--->

@@ -109,22 +109,8 @@ See example "FakeMidTermFinal" in [Tidy Ros](https://github.com/behrman/ros)
   * Reduce error on effect estimate
   * Control for selection bias
   
-
-
-   
-
 ## Meeting Videos
 
-<!--
 ### Cohort 2
 
-`r knitr::include_url("https://www.youtube.com/embed/URL")`
-
-<details>
-<summary> Meeting chat log </summary>
-
-```
-LOG
-```
-</details>
--->
+`r knitr::include_url("https://www.youtube.com/embed/YKfeFbwUtgI")`

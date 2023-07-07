@@ -15,16 +15,15 @@
 
 `r knitr::include_url("https://www.youtube.com/embed/2sgUrbUoGW0")`
 
-<!--
 ### Cohort 2
 
-`r knitr::include_url("https://www.youtube.com/embed/URL")`
+`r knitr::include_url("https://www.youtube.com/embed/opyVbPAFuAA")`
 
 <details>
 <summary> Meeting chat log </summary>
-
 ```
-LOG
+00:14:56	Ryan Honomichl:	https://github.com/behrman/ros
+00:53:12	Ronald Legere:	https://en.wikipedia.org/wiki/Abraham_Wald
+00:58:33	mohamed.shoeb:	I'll have to leave now! Hope I can catch up again with you next week
 ```
 </details>
--->

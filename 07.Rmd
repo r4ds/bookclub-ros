@@ -200,16 +200,6 @@ ggplot(fake) + geom_point(mapping = aes(x=x, y=y)) +
 
 `r knitr::include_url("https://www.youtube.com/embed/wbV4eNkyNVU")`
 
-<!--
 ### Cohort 2
 
-`r knitr::include_url("https://www.youtube.com/embed/URL")`
-
-<details>
-<summary> Meeting chat log </summary>
-
-```
-LOG
-```
-</details>
--->
+`r knitr::include_url("https://www.youtube.com/embed/mR7DV59-w4w")`

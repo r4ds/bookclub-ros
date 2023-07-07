@@ -15,16 +15,17 @@
 
 `r knitr::include_url("https://www.youtube.com/embed/vMWOCywO8jM")`
 
-<!--
 ### Cohort 2
 
-`r knitr::include_url("https://www.youtube.com/embed/URL")`
+`r knitr::include_url("https://www.youtube.com/embed/KkHX8Wn3Y_k")`
 
 <details>
 <summary> Meeting chat log </summary>
-
 ```
-LOG
+00:04:45	Ama Owusu-Darko:	Glad to hear you are feeling better, Ryan
+00:46:11	Ryan Honomichl:	https://pubmed.ncbi.nlm.nih.gov/34291998/
+00:52:05	Ryan Honomichl:	https://data.humdata.org/dataset/who-data-for-ghana
+00:52:48	Ryan Honomichl:	https://dhsprogram.com/data/available-datasets.cfm?ctryid=14
+00:53:48	Ryan Honomichl:	https://guides.lib.umich.edu/c.php?g=559326&p=3847099
 ```
 </details>
--->

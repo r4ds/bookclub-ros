@@ -197,16 +197,14 @@ model = bmb.Model('y ~ x', mydata)
 
 `r knitr::include_url("https://www.youtube.com/embed/VYivNF3xL9c")`
 
-<!--
 ### Cohort 2
 
-`r knitr::include_url("https://www.youtube.com/embed/URL")`
+`r knitr::include_url("https://www.youtube.com/embed/l4CgxBlnuuA")`
 
 <details>
 <summary> Meeting chat log </summary>
-
 ```
-LOG
+00:48:44	Ryan Honomichl:	https://avehtari.github.io/ROS-Examples/
+00:53:46	Ryan Honomichl:	https://podcasts.apple.com/us/podcast/20-regression-and-other-stories-with-andrew/id1483485062?i=1000486574536
 ```
 </details>
--->

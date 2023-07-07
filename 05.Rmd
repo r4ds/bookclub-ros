@@ -15,16 +15,17 @@
 
 `r knitr::include_url("https://www.youtube.com/embed/nVrIicqahnk")`
 
-<!--
 ### Cohort 2
 
-`r knitr::include_url("https://www.youtube.com/embed/URL")`
+`r knitr::include_url("https://www.youtube.com/embed/-96oIKolKkw")`
 
 <details>
 <summary> Meeting chat log </summary>
-
 ```
-LOG
+00:44:11	Ama Owusu-Darko:	Yes
+00:46:38	Ama Owusu-Darko:	thanks for explaining
+00:52:35	Ama Owusu-Darko:	No, I haven't also seen that formula
+01:00:46	Ron:	Thanks ama!
+01:01:20	Ama Owusu-Darko:	Yes, see you next week
 ```
 </details>
--->

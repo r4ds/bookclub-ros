@@ -1,4 +1,4 @@
-# More advanced topics in causal inference
+# Observational studies assuming all confounders measured
 
 **Learning objectives:**
 
@@ -11,16 +11,13 @@
 
 ## Meeting Videos
 
-<!--
 ### Cohort 2
 
-`r knitr::include_url("https://www.youtube.com/embed/URL")`
+`r knitr::include_url("https://www.youtube.com/embed/UyYfJA6JJYE")`
 
 <details>
 <summary> Meeting chat log </summary>
-
 ```
 LOG
 ```
 </details>
--->
